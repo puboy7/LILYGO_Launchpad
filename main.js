@@ -1,79 +1,79 @@
-const connectBtn = document.getElementById('connectBtn');
-const downloadBtn = document.getElementById('downloadBtn');
-const flashBtn = document.getElementById('flashBtn');
-const logEl = document.getElementById('log');
-const deviceStatus = document.getElementById('deviceStatus');
+import { ESPLoader, Transport } from "https://unpkg.com/esptool-js@3.1.0/bundle.js";
 
-let port = null;
-let espLoader = null;
+let firmwareData = null;
 
-// 日志输出
-function log(msg) {
-  logEl.textContent += msg + '\n';
-  logEl.scrollTop = logEl.scrollHeight;
+const logEl = document.getElementById("log");
+const uploadBox = document.getElementById("uploadBox");
+const fileInput = document.getElementById("firmwareFile");
+const flashBtn = document.getElementById("flashBtn");
+
+function log(txt) {
+    logEl.textContent += txt + "\n";
+    logEl.scrollTop = logEl.scrollHeight;
 }
 
-/** 连接设备 */
-connectBtn.addEventListener('click', async () => {
-  try {
-    port = await navigator.serial.requestPort();
-    await port.open({ baudRate: 115200 });
-    deviceStatus.textContent = '设备已连接';
+// --------------------- 文件上传处理 ---------------------
 
-    log('串口已打开');
+uploadBox.onclick = () => fileInput.click();
+uploadBox.ondragover = e => e.preventDefault();
 
-    // 初始化 esptool‑js loader
-    espLoader = new ESPLoader({ port, baudRate: 115200 });
-    await espLoader.connect();
-    log('esptool‑js 已就绪');
-  } catch (err) {
-    log('连接失败: ' + err);
-  }
-});
+uploadBox.ondrop = e => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    handleFile(file);
+};
 
-/** 下载固件 */
-downloadBtn.addEventListener('click', async () => {
-  const url = document.getElementById('firmwareUrl').value;
-  if (!url) return log('请输入固件 URL');
-
-  try {
-    const res = await fetch(url);
-    const blob = await res.blob();
-
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = url.split('/').pop();
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-
-    log('固件下载完成: ' + a.download);
-  } catch (err) {
-    log('下载失败: ' + err);
-  }
-});
-
-/** 烧录固件 */
-flashBtn.addEventListener('click', async () => {
-  if (!espLoader) return log('请先连接设备');
-
-  const fileInput = document.createElement('input');
-  fileInput.type = 'file';
-  fileInput.accept = '.bin';
-
-  fileInput.onchange = async () => {
+fileInput.onchange = () => {
     const file = fileInput.files[0];
-    const bin = new Uint8Array(await file.arrayBuffer());
+    handleFile(file);
+};
 
-    log(`开始刷写: ${file.name}`);
+function handleFile(file) {
+    if (!file || !file.name.endsWith(".bin")) {
+        alert("请选择 .bin 固件文件");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+        firmwareData = new Uint8Array(reader.result);
+        uploadBox.textContent = "已选择固件：" + file.name;
+        flashBtn.disabled = false;
+        log("✔ 固件已加载：" + file.name);
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+// --------------------- 烧录逻辑 ---------------------
+
+flashBtn.onclick = async () => {
+    if (!firmwareData) return;
 
     try {
-      // 写入 flash
-      await espLoader.flash(bin, /* address */ 0x10000);
-      log('刷写完成 🎉');
+        log("请求串口权限…");
+        const port = await navigator.serial.requestPort();
+        await port.open({ baudRate: 115200 });
+
+        log("初始化传输接口…");
+        const transport = new Transport(port);
+
+        log("连接 ESP 芯片…");
+        const loader = new ESPLoader(transport);
+
+        await loader.main();
+
+        log("✨ 正在烧录…");
+
+        await loader.writeFlash({
+            offset: 0x0,
+            data: firmwareData,
+            compress: true
+        });
+
+        log("🎉 烧录成功！设备已重启");
+
     } catch (err) {
-      log('刷写失败: ' + err);
+        log("❌ 错误：" + err);
+        console.error(err);
     }
-  };
-  fileInput.click();
-});
+};

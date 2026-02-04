@@ -1,57 +1,23 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-<meta charset="UTF-8">
-<title>LILYGO Launchpad – 固件刷写器</title>
-<style>
-    body { font-family: 'Segoe UI', sans-serif; background:#f5f5f5; margin:0; }
-    .container {
-        max-width: 600px; margin: 50px auto; background:#fff; padding:30px;
-        border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.1);
-    }
-    h2 { text-align:center; }
-    .upload-area {
-        text-align:center; padding:20px; border:2px dashed #bbb;
-        border-radius:10px; cursor:pointer;
-    }
-    button {
-        width:100%; padding:15px; background:#007bff; color:#fff;
-        border:none; border-radius:8px; font-size:16px;
-    }
-    pre { background:#111; color:#0f0; padding:15px; height:200px; overflow-y:auto; }
-</style>
+    <meta charset="UTF-8">
+    <title>LILYGO Launchpad - 固件刷写器</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
-    <h2>🔥 LILYGO Launchpad 本地固件刷写器</h2>
+    <h2>🔥 LILYGO Launchpad 固件刷写器</h2>
 
-    <div class="upload-area" id="uploadBox">点击或拖拽固件（.bin）</div>
+    <div id="uploadBox" class="upload-area">点击或拖拽固件（.bin）</div>
     <input type="file" id="firmwareFile" accept=".bin" style="display:none">
 
     <button id="flashBtn" disabled>⚡ 烧录固件</button>
+
     <pre id="log"></pre>
 </div>
 
-<!-- 使用新 API -->
-<script type="module">
-import { ESPLoader, Transport } from "https://unpkg.com/esptool-js@3.2.1/bundle.js";
-
-let firmwareData = null;
-const logEl = document.getElementById("log");
-
-function log(msg) {
-    logEl.textContent += msg + "\n";
-    logEl.scrollTop = logEl.scrollHeight;
-}
-
-const uploadBox = document.getElementById("uploadBox");
-const fileInput = document.getElementById("firmwareFile");
-
-uploadBox.onclick = () => fileInput.click();
-uploadBox.ondragover = e => e.preventDefault();
-uploadBox.ondrop = e => {
-    e.preventDefault();
-    handleFile(e.dataTransfer.files[0]);
-};
-file
+<script type="module" src="main.js"></script>
+</body>
+</html>
