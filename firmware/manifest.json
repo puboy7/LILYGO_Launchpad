@@ -1,14 +1,10 @@
 {
-  "name": "ESP32 固件",
+  "name": "LILYGO ESP32 固件",
   "version": "1.0.0",
-  "builds": [
+  "firmware": [
     {
-      "chipFamily": "ESP32",
-      "parts": [
-        { "path": "bootloader.bin", "offset": 4096 },
-        { "path": "partitions.bin", "offset": 32768 },
-        { "path": "firmware.bin", "offset": 65536 }
-      ]
+      "path": "/LILYGO_Launchpad/firmware/esp32_firmware.bin",
+      "offset": "0x1000"
     }
   ]
 }

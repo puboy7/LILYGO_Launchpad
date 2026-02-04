@@ -2,15 +2,23 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
-  <title>ESP32 在线刷机器</title>
+  <title>LILYGO ESP32 在线刷机</title>
 
   <script type="module">
     import { install } from "https://unpkg.com/esp-web-tools@9/dist/web/install-button.js";
 
     window.addEventListener("DOMContentLoaded", () => {
       const button = document.querySelector("#flash-btn");
+      const status = document.querySelector("#status");
+
       install(button, {
-        manifest: "firmware/manifest.json"
+        manifest: "/LILYGO_Launchpad/firmware/manifest.json"
+      })
+      .then(() => {
+        status.textContent = "刷机完成！";
+      })
+      .catch(err => {
+        status.textContent = "刷机失败: " + err;
       });
     });
   </script>
@@ -24,13 +32,7 @@
       display: flex;
       justify-content: center;
     }
-    .container {
-      display: flex;
-      max-width: 900px;
-      width: 100%;
-      gap: 20px;
-    }
-
+    .container { display: flex; max-width: 900px; width: 100%; gap: 20px; }
     .card {
       background: white;
       padding: 25px;
@@ -38,9 +40,7 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       flex: 1;
     }
-
     h2 { margin-bottom: 15px; }
-
     #flash-btn {
       margin-top: 20px;
       padding: 14px 24px;
@@ -51,28 +51,25 @@
       cursor: pointer;
       font-size: 16px;
     }
-    #flash-btn:hover {
-      background-color: #0f62b4;
-    }
+    #flash-btn:hover { background-color: #0f62b4; }
+    #status { margin-top: 10px; font-weight: bold; }
   </style>
 
 </head>
-
 <body>
   <div class="container">
 
-    <!-- 左侧卡片（设备说明） -->
     <div class="card">
       <h2>ESP32 设备刷机</h2>
       <p>通过浏览器直接刷写 ESP32 固件，无需安装软件。</p>
       <p>确保电脑支持 Chrome / Edge，并使用数据线连接 ESP32。</p>
     </div>
 
-    <!-- 右侧卡片（刷机按钮） -->
     <div class="card">
       <h2>开始刷写</h2>
       <p>点击下方按钮连接设备并开始刷写固件。</p>
       <button id="flash-btn">连接并刷写 ESP32</button>
+      <p id="status"></p>
     </div>
 
   </div>
