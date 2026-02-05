@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="permissions" content="serial">
+    <meta http-equiv="Content-Security-Policy" content="serial 'self'">
     <title>ESP Web Flasher | 网页端固件烧录工具</title>
     <style>
         * {
@@ -291,7 +293,7 @@
     </div>
 
     <!-- 引入esptool-js -->
-    <script src="https://unpkg.com/esptool-js@0.4.0/dist/esptool.min.js"></script>
+    <script src="https://unpkg.com/esptool-js@latest/dist/esptool.min.js"></script>
     <script>
         // DOM元素获取
         const connectBtn = document.getElementById('connectBtn');
