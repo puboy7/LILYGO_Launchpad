@@ -1,485 +1,80 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESP Web Flasher | 网页端固件烧录工具</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-        }
-        body {
-            background-color: #f8fafc;
-            color: #1e293b;
-            line-height: 1.6;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 2rem 1rem;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 3rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        .header h1 {
-            font-size: 2.2rem;
-            color: #0f172a;
-            margin-bottom: 0.5rem;
-        }
-        .header p {
-            font-size: 1.1rem;
-            color: #64748b;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        /* 核心模块样式 - 分块布局 */
-        .card-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin-bottom: 2.5rem;
-        }
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s ease;
-        }
-        .card:hover {
-            transform: translateY(-4px);
-        }
-        .card-title {
-            font-size: 1.4rem;
-            color: #0f172a;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
-        .card-title svg {
-            width: 24px;
-            height: 24px;
-            fill: #3b82f6;
-        }
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        label {
-            display: block;
-            margin-bottom: 0.7rem;
-            font-weight: 500;
-            color: #334155;
-        }
-        /* 按钮样式 - 明亮醒目 */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.9rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .btn-primary {
-            background-color: #3b82f6;
-            color: white;
-        }
-        .btn-primary:hover {
-            background-color: #2563eb;
-            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
-        }
-        .btn-primary:disabled {
-            background-color: #93c5fd;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-        .btn-secondary {
-            background-color: #f1f5f9;
-            color: #334155;
-        }
-        .btn-secondary:hover {
-            background-color: #e2e8f0;
-        }
-        /* 选择框/文件上传样式 */
-        .select-control {
-            width: 100%;
-            padding: 0.9rem;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 1rem;
-            color: #334155;
-            background-color: white;
-            cursor: pointer;
-        }
-        .file-upload {
-            display: none;
-        }
-        .file-upload-label {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            width: 100%;
-            padding: 0.9rem 1.5rem;
-            border: 1px dashed #cbd5e1;
-            border-radius: 8px;
-            font-size: 1rem;
-            color: #3b82f6;
-            background-color: #f8fafc;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .file-upload-label:hover {
-            border-color: #3b82f6;
-            background-color: #f0f9ff;
-        }
-        /* 日志区域样式 */
-        .log-section {
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-        .log-title {
-            font-size: 1.2rem;
-            color: #0f172a;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
-        .log-title svg {
-            width: 20px;
-            height: 20px;
-            fill: #64748b;
-        }
-        #log-area {
-            width: 100%;
-            height: 200px;
-            padding: 1rem;
-            border: 1px solid #f1f5f9;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            line-height: 1.5;
-            resize: vertical;
-            background-color: #f8fafc;
-            color: #334155;
-            font-family: 'Consolas', 'Monaco', monospace;
-        }
-        /* 响应式布局 */
-        @media (max-width: 768px) {
-            .card-container {
-                grid-template-columns: 1fr;
-            }
-            .header h1 {
-                font-size: 1.8rem;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESP Web Flasher</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <!-- 头部标题 -->
-        <div class="header">
-            <h1>ESP Web Flasher</h1>
-            <p>无需安装软件，网页端一键完成ESP32/ESP8266设备固件烧录</p>
-        </div>
 
-        <!-- 核心功能模块 - 分两块布局 -->
-        <div class="card-container">
-            <!-- 第一块：设备选择与连接 -->
-            <div class="card">
-                <div class="card-title">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <path d="M19 7v4H5V7h14m0-2H5c-1.1 0-2 .9-2 2v4c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 10H5v4c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-4z"/>
-                    </svg>
-                    设备连接
-                </div>
-                <div class="form-group">
-                    <label for="baudRateSelect">波特率设置</label>
-                    <select id="baudRateSelect" class="select-control">
-                        <option value="921600" selected>921600 波特率（推荐）</option>
-                        <option value="115200">115200 波特率</option>
-                        <option value="57600">57600 波特率</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <button id="connectBtn" class="btn btn-primary" style="width: 100%;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                            <polyline points="15 3 21 3 21 9"></polyline>
-                            <line x1="10" y1="14" x2="21" y2="3"></line>
-                        </svg>
-                        选择并连接ESP设备
-                    </button>
-                </div>
-                <div class="form-group">
-                    <button id="disconnectBtn" class="btn btn-secondary" style="width: 100%;" disabled>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M9 18l6-6-6-6"></path>
-                        </svg>
-                        断开设备连接
-                    </button>
-                </div>
-            </div>
+<div class="container">
+  <div class="header">
+    <h1>ESP Web Flasher</h1>
+    <p>网页端 ESP32/ESP8266 固件烧录工具</p>
+  </div>
 
-            <!-- 第二块：固件选择与烧录 -->
-            <div class="card">
-                <div class="card-title">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6z"/>
-                        <path d="M14 3v5h5"/>
-                        <path d="M13 13H7v7h6v-7z"/>
-                        <path d="M17 13h-2v7h2v-7z"/>
-                    </svg>
-                    固件烧录
-                </div>
-                <div class="form-group">
-                    <label for="firmwareFile">选择固件文件（.bin格式）</label>
-                    <input type="file" id="firmwareFile" accept=".bin" class="file-upload" />
-                    <label for="firmwareFile" class="file-upload-label">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="17 8 12 3 7 8"></polyline>
-                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                        </svg>
-                        点击上传固件或拖拽文件至此处
-                    </label>
-                </div>
-                <div class="form-group">
-                    <label for="flashMode">烧录模式</label>
-                    <select id="flashMode" class="select-control">
-                        <option value="update" selected>仅更新固件（保留数据）</option>
-                        <option value="wipe">擦除所有数据后安装</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <button id="flashBtn" class="btn btn-primary" style="width: 100%;" disabled>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="23 4 23 10 17 10"></polyline>
-                            <polyline points="1 20 1 14 7 14"></polyline>
-                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                        </svg>
-                        开始烧录固件
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 日志展示区域 -->
-        <div class="log-section">
-            <div class="log-title">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6z"/>
-                    <path d="M14 3v5h5"/>
-                </svg>
-                烧录日志
-            </div>
-            <textarea id="log-area" readonly placeholder="连接设备、烧录固件的日志将显示在这里..."></textarea>
-        </div>
+  <div class="card-container">
+    <!-- 左侧：设备连接 -->
+    <div class="card">
+      <div class="card-title">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path d="M19 7v4H5V7h14m0-2H5c-1.1 0-2 .9-2 2v4c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 10H5v4c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-4z"/>
+        </svg>
+        设备连接
+      </div>
+      <div class="form-group">
+        <label for="baudRateSelect">波特率</label>
+        <select id="baudRateSelect" class="select-control">
+          <option value="921600" selected>921600（推荐）</option>
+          <option value="115200">115200</option>
+          <option value="57600">57600</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <button id="connectBtn" class="btn btn-primary">选择并连接 ESP 设备</button>
+      </div>
+      <div class="form-group">
+        <button id="disconnectBtn" class="btn btn-secondary" disabled>断开连接</button>
+      </div>
     </div>
 
-    <!-- 引入esptool-js -->
-    <script src="https://unpkg.com/esptool-js@latest/dist/esptool.min.js"></script>
-    <script>
-        // DOM元素获取
-        const connectBtn = document.getElementById('connectBtn');
-        const disconnectBtn = document.getElementById('disconnectBtn');
-        const flashBtn = document.getElementById('flashBtn');
-        const baudRateSelect = document.getElementById('baudRateSelect');
-        const firmwareFile = document.getElementById('firmwareFile');
-        const flashMode = document.getElementById('flashMode');
-        const logArea = document.getElementById('log-area');
+    <!-- 右侧：固件烧录 -->
+    <div class="card">
+      <div class="card-title">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6z"/>
+          <path d="M14 3v5h5"/>
+        </svg>
+        固件烧录
+      </div>
+      <div class="form-group">
+        <label for="firmwareFile">固件文件（.bin）</label>
+        <input type="file" id="firmwareFile" accept=".bin" class="file-upload">
+        <label for="firmwareFile" class="file-upload-label">点击或拖拽上传固件</label>
+      </div>
+      <div class="form-group">
+        <label for="flashMode">烧录模式</label>
+        <select id="flashMode" class="select-control">
+          <option value="update" selected>仅更新固件（保留数据）</option>
+          <option value="wipe">擦除全部后安装</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <button id="flashBtn" class="btn btn-primary" disabled>开始烧录固件</button>
+      </div>
+    </div>
+  </div>
 
-        // 全局变量
-        let espLoader = null;
-        let port = null;
-        let firmwareBuffer = null;
+  <!-- 日志 -->
+  <div class="log-section">
+    <div class="log-title">烧录日志</div>
+    <textarea id="log-area" readonly placeholder="日志将显示在这里..."></textarea>
+  </div>
+</div>
 
-        // 日志打印函数
-        function log(message) {
-            const time = new Date().toLocaleTimeString();
-            logArea.value += `[${time}] ${message}\n`;
-            logArea.scrollTop = logArea.scrollHeight;
-        }
+<script src="https://unpkg.com/esptool-js@latest/dist/esptool.min.js"></script>
+<script src="script.js"></script>
 
-        // 1. 连接设备
-        connectBtn.addEventListener('click', async () => {
-            try {
-                if (!('serial' in navigator)) {
-                    throw new Error('浏览器不支持Web Serial API，请使用Chrome/Edge/Opera最新版本！');
-                }
-
-                log('请求串口权限，请选择ESP烧录器对应的串口...');
-                port = await navigator.serial.requestPort({
-                    filters: [{ usbVendorId: 0x10C4 }, { usbVendorId: 0x1A86 }] // 适配常见烧录器
-                });
-
-                const baudRate = parseInt(baudRateSelect.value);
-                await port.open({ baudRate, dataBits: 8, stopBits: 1, parity: 'none' });
-
-                const reader = port.readable.getReader();
-                const writer = port.writable.getWriter();
-                const stream = {
-                    read: async () => (await reader.read()),
-                    write: async (data) => await writer.write(data),
-                    close: async () => {
-                        reader.releaseLock();
-                        writer.releaseLock();
-                        await port.close();
-                    }
-                };
-
-                espLoader = new esptool.ESPLoader(stream, baudRate);
-                espLoader.on('log', (msg) => log(msg));
-
-                log('唤醒ESP引导加载程序...');
-                await espLoader.initialize();
-                log(`设备连接成功！芯片类型：${espLoader.chip}，波特率：${baudRate}`);
-
-                // 更新按钮状态
-                connectBtn.disabled = true;
-                disconnectBtn.disabled = false;
-                flashBtn.disabled = !firmwareBuffer;
-            } catch (error) {
-                log(`连接失败：${error.message}`);
-                if (port) await port.close().catch(() => {});
-            }
-        });
-
-        // 2. 断开设备
-        disconnectBtn.addEventListener('click', async () => {
-            try {
-                log('断开设备连接中...');
-                if (espLoader) {
-                    await espLoader.close();
-                    espLoader = null;
-                }
-                if (port) {
-                    await port.close();
-                    port = null;
-                }
-                connectBtn.disabled = false;
-                disconnectBtn.disabled = true;
-                flashBtn.disabled = true;
-                log('设备已断开连接');
-            } catch (error) {
-                log(`断开失败：${error.message}`);
-            }
-        });
-
-        // 3. 选择固件文件
-        firmwareFile.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            if (file.name.split('.').pop() !== 'bin') {
-                log('请选择.bin格式的ESP固件文件！');
-                firmwareFile.value = '';
-                firmwareBuffer = null;
-                flashBtn.disabled = true;
-                return;
-            }
-
-            try {
-                log(`读取固件：${file.name}（大小：${(file.size / 1024).toFixed(2)}KB）`);
-                const arrayBuffer = await file.arrayBuffer();
-                firmwareBuffer = new Uint8Array(arrayBuffer);
-                log('固件读取成功，可开始烧录');
-                flashBtn.disabled = !espLoader;
-            } catch (error) {
-                log(`固件读取失败：${error.message}`);
-                firmwareBuffer = null;
-                flashBtn.disabled = true;
-            }
-        });
-
-        // 4. 开始烧录
-        flashBtn.addEventListener('click', async () => {
-            if (!espLoader || !firmwareBuffer) {
-                log('请先连接设备并选择固件！');
-                return;
-            }
-
-            try {
-                flashBtn.disabled = true;
-                firmwareFile.disabled = true;
-                const mode = flashMode.value;
-                log(`==================== 开始烧录（${mode === 'wipe' ? '擦除数据模式' : '仅更新模式'}）====================`);
-
-                // 擦除模式判断
-                if (mode === 'wipe') {
-                    log('擦除整个闪存...');
-                    await espLoader.eraseFlash('all');
-                } else {
-                    log('自动擦除需要更新的区域...');
-                    await espLoader.eraseFlash('auto');
-                }
-
-                log('写入固件中...');
-                await espLoader.writeFlash(0x00000, firmwareBuffer, (progress) => {
-                    log(`烧录进度：${(progress * 100).toFixed(1)}%`);
-                });
-
-                log('校验固件完整性...');
-                const verifyResult = await espLoader.verifyFlash(0x00000, firmwareBuffer);
-                if (verifyResult) {
-                    log('==================== 固件烧录成功！====================');
-                    log('请重启ESP设备以运行新固件');
-                } else {
-                    throw new Error('固件校验失败，请重新烧录');
-                }
-            } catch (error) {
-                log(`烧录失败：${error.message}`);
-                log('建议：检查设备连接、降低波特率或重新选择固件');
-            } finally {
-                firmwareFile.disabled = false;
-                flashBtn.disabled = false;
-            }
-        });
-
-        // 拖拽上传固件
-        const fileLabel = document.querySelector('.file-upload-label');
-        fileLabel.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            fileLabel.style.borderColor = '#3b82f6';
-            fileLabel.style.backgroundColor = '#f0f9ff';
-        });
-        fileLabel.addEventListener('dragleave', () => {
-            fileLabel.style.borderColor = '#cbd5e1';
-            fileLabel.style.backgroundColor = '#f8fafc';
-        });
-        fileLabel.addEventListener('drop', (e) => {
-            e.preventDefault();
-            fileLabel.style.borderColor = '#cbd5e1';
-            fileLabel.style.backgroundColor = '#f8fafc';
-
-            const file = e.dataTransfer.files[0];
-            if (file && file.name.split('.').pop() === 'bin') {
-                firmwareFile.files = e.dataTransfer.files;
-                // 触发文件变化事件
-                const event = new Event('change');
-                firmwareFile.dispatchEvent(event);
-            } else {
-                log('请拖拽.bin格式的ESP固件文件！');
-            }
-        });
-
-        // 页面关闭时断开连接
-        window.addEventListener('beforeunload', async () => {
-            if (port) await port.close().catch(() => {});
-        });
-    </script>
 </body>
 </html>
