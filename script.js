@@ -35,20 +35,37 @@ document.addEventListener('DOMContentLoaded', function () {
         log('⚠️  警告：未找到日志元素 [id="log-area"]，请检查HTML文件！');
     }
 
-    // 4. 连接设备（核心修复：前置if判断，避免null调用addEventListener）
+    // 4. 连接设备（已包含过滤参数兼容修复）
     if (connectBtn) {
         connectBtn.addEventListener('click', async () => {
             try {
                 // 校验浏览器是否支持Web Serial API
                 if (!('serial' in navigator)) {
-                    throw new Error('浏览器不支持Web Serial API，请使用Chrome/Edge最新版本！');
+                    throw new Error('浏览器不支持Web Serial API，请使用Chrome/Edge 100+最新版本！');
                 }
 
-                log('🔌  正在请求串口权限，请选择ESP物理串口（排除蓝牙串口）...');
-                // 过滤USB物理串口，解决蓝牙blocklist错误
-                port = await navigator.serial.requestPort({
-                    filters: [{ interfaceClass: 0x02 }]
-                });
+                log('🔌  正在请求串口权限，请选择ESP物理串口（排除蓝牙/虚拟串口）...');
+                let port;
+                try {
+                    // 方案1：新版浏览器 - 过滤常见ESP串口厂商ID+USB接口类，精准匹配物理串口
+                    port = await navigator.serial.requestPort({
+                        filters: [
+                            { usbVendorId: 0x10c4 }, // Silicon Labs（常见ESP下载器）
+                            { usbVendorId: 0x0403 }, // FTDI
+                            { usbVendorId: 0x1a86 }, // 沁恒CH340/CH341
+                            { usbVendorId: 0x067b }, // Prolific PL2303
+                            { interfaceClass: 0x02 } // USB通信设备类（兜底过滤）
+                        ]
+                    });
+                } catch (err) {
+                    // 方案2：旧版浏览器 - 过滤参数不兼容时，无过滤请求串口，手动提示用户
+                    if (err.message.includes('filter') || err.message.includes('property') || err.message.includes('must provide')) {
+                        log('ℹ️  浏览器兼容模式：将显示所有串口，请手动选择ESP物理串口（不要选蓝牙/虚拟串口）！');
+                        port = await navigator.serial.requestPort(); // 无过滤，兼容所有版本
+                    } else {
+                        throw err; // 非过滤参数错误，正常抛出
+                    }
+                }
 
                 // 打开串口（获取波特率，默认115200）
                 const baud = parseInt(baudRateSelect.value || 115200);
@@ -85,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (err.name === 'AbortError') {
                     log('ℹ️  提示：你取消了串口设备选择！');
                 } else if (err.message.includes('Serial blocklist') || err.message.includes('bluetooth')) {
-                    log('ℹ️  提示：已自动过滤蓝牙串口，请确保ESP通过USB连接并进入烧录模式！');
+                    log('ℹ️  提示：请确保ESP通过USB连接并进入烧录模式，不要选择蓝牙串口！');
                 } else {
                     log(`❌  连接失败：${err.message}`);
                 }
