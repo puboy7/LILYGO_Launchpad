@@ -1,0 +1,34 @@
+.box {
+    width: calc(100vw - 1rem);
+    max-width: 40rem;
+    min-width: 25rem;
+}
+
+.grid {
+    margin-bottom: 1rem;
+}
+
+.fileItem {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #efefef;
+    border-radius: 5px;
+}
+
+.fileItem:nth-of-type(2n) {
+    background: inherit;
+}
+
+.fileOffset {
+    padding-left: .5rem;
+}
+
+.fileName {
+    line-height: 40px;
+    text-align: center;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
