@@ -1,6 +1,6 @@
 // 1. 设备列表（ABCD自定义型号，关联对应芯片型号）
 export const deviceList = [
-    { label: "设备A", value: "DEVICE_A", chip: "ESP32_C3" }, // 设备A用ESP32-C3芯片
+    { label: "T-Deck", value: "DEVICE_A", chip: "ESP32_C3" }, // 设备A用ESP32-C3芯片
     { label: "设备B", value: "DEVICE_B", chip: "ESP32_C3" }, // 设备B和A同芯片
     { label: "设备C", value: "DEVICE_C", chip: "ESP8266" },  // 设备C用ESP8266芯片
     { label: "设备D", value: "DEVICE_D", chip: "ESP32_S3" }, // 设备D用ESP32-S3芯片

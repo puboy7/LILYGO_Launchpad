@@ -1,170 +1,229 @@
-import { ready } from 'https://lsong.org/scripts/dom.js';
-import { readAsBinaryString } from 'https://lsong.org/scripts/file.js';
-import { requestPort } from 'https://lsong.org/scripts/serialport.js';
-import { ESPLoader, Transport } from './esptool.min.js';
+import { firmwareLibrary, deviceList } from './firmware-library.js';
 
-ready(() => {
-    const connect = document.getElementById('connect');
-    const baudrate = document.getElementById('baudrate');
-    const flash = document.getElementById('flash');
-    const erase = document.getElementById('erase');
-    const output = document.getElementById('output');
-    const status = document.getElementById('status');
-    const board = document.getElementById('device');
-    const progressBar = document.querySelector('progress-bar');
-    const fileList = document.getElementById('file-list');
-    const addFileButton = document.getElementById('add-file');
-    const eraseAllCheckbox = document.getElementById('erase-all');
-    const compressCheckbox = document.getElementById('compress');
+// DOM元素获取
+const deviceSelect = document.getElementById('device-select');
+const portSelect = document.getElementById('port-select');
+const connectPortBtn = document.getElementById('connect-port');
+const burnFirmwareBtn = document.getElementById('burn-firmware');
+const firmwareInfo = document.getElementById('firmware-info');
+const chipInfo = document.getElementById('chip-info');
+const chipName = document.getElementById('chip-name');
+const deviceStatus = document.getElementById('device-status');
+const portStatus = document.getElementById('port-status');
+const burnProgress = document.getElementById('burn-progress');
+const logBox = document.getElementById('log-box');
 
-    // 文件管理
-    function createFileEntry() {
-        const entry = document.createElement('div');
-        entry.className = 'file-entry';
-        entry.innerHTML = `
-      <input type="text" class="address-input" value="0x000000" placeholder="Flash地址">
-      <input type="file" class="file-input">
-      <button class="remove-file">-</button>
-    `;
+// 全局变量
+let selectedDevice = null; // 选中的设备（DEVICE_A/B/C/D）
+let selectedChip = null;   // 选中设备关联的芯片（ESP32_C3/ESP8266等）
+let selectedFirmware = null; // 芯片对应的固件
+let serialPort = null; // 串口实例
+let espLoader = null; // ESP烧录核心实例
 
-        const removeButton = entry.querySelector('.remove-file');
-        removeButton.addEventListener('click', () => {
-            if (fileList.children.length > 1) entry.remove();
-            updateRemoveButtons();
+// 初始化：加载ABCD设备列表到下拉框
+function initDeviceList() {
+    deviceList.forEach(device => {
+        const option = document.createElement('option');
+        option.value = device.value;
+        option.textContent = device.label;
+        option.dataset.chip = device.chip; // 存储设备关联的芯片（隐藏，用户不可见）
+        deviceSelect.appendChild(option);
+    });
+}
+initDeviceList();
+
+// 日志输出函数（带颜色、自动滚动）
+function log(text, type = 'info') {
+    const colorMap = {
+        info: '#1e293b',
+        success: '#10b981',
+        error: '#ef4444',
+        warn: '#f97316',
+        progress: '#3b82f6'
+    };
+    const time = new Date().toLocaleTimeString();
+    const logItem = `<span style="color:${colorMap[type]}">[${time}] ${text}</span><br>`;
+    logBox.innerHTML += logItem;
+    logBox.scrollTop = logBox.scrollHeight;
+}
+
+// 步骤1：选择设备（ABCD）→ 自动获取关联芯片→匹配固件
+deviceSelect.addEventListener('change', async function () {
+    const selectedOption = this.options[this.selectedIndex];
+    selectedDevice = this.value;
+    selectedChip = selectedOption?.dataset.chip || null;
+
+    if (!selectedDevice || !selectedChip) {
+        // 重置状态
+        selectedFirmware = null;
+        chipInfo.classList.add('hidden');
+        firmwareInfo.textContent = '未选择设备';
+        deviceStatus.textContent = '未选择';
+        deviceStatus.style.color = 'var(--danger)';
+        portSelect.disabled = true;
+        portSelect.innerHTML = '<option value="" selected disabled>—— 请先选择设备 ——</option>';
+        connectPortBtn.disabled = true;
+        burnFirmwareBtn.disabled = true;
+        log('请选择有效的设备型号', 'warn');
+        return;
+    }
+
+    // 显示设备关联的芯片（仅展示，用户无需操作）
+    chipInfo.classList.remove('hidden');
+    chipName.textContent = selectedChip.replace('_', '-'); // 格式化为ESP32-C3
+
+    // 从固件库匹配芯片对应的固件
+    selectedFirmware = firmwareLibrary[selectedChip];
+    if (!selectedFirmware || selectedFirmware.length === 0) {
+        firmwareInfo.textContent = '无对应固件';
+        deviceStatus.textContent = '无匹配固件';
+        deviceStatus.style.color = 'var(--danger)';
+        portSelect.disabled = true;
+        connectPortBtn.disabled = true;
+        burnFirmwareBtn.disabled = true;
+        log(`错误：固件库中未找到【${selectedChip.replace('_', '-')}】芯片对应的固件`, 'error');
+        return;
+    }
+
+    // 更新状态：设备选择成功
+    const firmwareNames = selectedFirmware.map(f => f.name || `地址0x${f.address.toString(16).toUpperCase()}`).join('、');
+    firmwareInfo.textContent = firmwareNames;
+    deviceStatus.textContent = '已选择';
+    deviceStatus.style.color = 'var(--success)';
+    portSelect.disabled = false;
+    portSelect.innerHTML = '<option value="" selected disabled>—— 加载端口中 ——</option>';
+    log(`成功选择设备：${selectedOption.textContent}（关联芯片：${selectedChip.replace('_', '-')}），匹配固件：${firmwareNames}`, 'success');
+
+    // 加载可用串口端口
+    loadSerialPorts();
+});
+
+// 加载可用串口端口
+async function loadSerialPorts() {
+    try {
+        if (!('serial' in navigator)) {
+            throw new Error('你的浏览器不支持Web Serial API（推荐Chrome/Edge最新版）');
+        }
+        const ports = await navigator.serial.getPorts();
+        portSelect.innerHTML = '<option value="" selected disabled>—— 请选择端口 ——</option>';
+
+        if (ports.length === 0) {
+            portSelect.innerHTML = '<option value="" selected disabled>未检测到可用端口，请连接设备</option>';
+            log('未检测到可用串口端口，请将设备连接到电脑并重启浏览器', 'warn');
+            return;
+        }
+
+        // 加载端口到下拉框
+        ports.forEach((port, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = `端口${index + 1} (${port.getInfo().usbVendorId ? `VID:0x${port.getInfo().usbVendorId.toString(16)}` : '未知设备'})`;
+            portSelect.appendChild(option);
+        });
+        log(`成功检测到 ${ports.length} 个可用串口端口`, 'info');
+
+        // 端口选择变化：启用连接按钮
+        portSelect.addEventListener('change', function () {
+            connectPortBtn.disabled = !this.value;
+            portStatus.textContent = '未连接';
+            portStatus.style.color = 'var(--danger)';
+            burnFirmwareBtn.disabled = true;
         });
 
-        const updateRemoveButtons = () => {
-            document.querySelectorAll('.remove-file').forEach(btn => {
-                btn.style.display = fileList.children.length > 1 ? 'inline' : 'none';
-            });
-        };
-
-        fileList.appendChild(entry);
-        updateRemoveButtons();
+    } catch (error) {
+        portSelect.innerHTML = '<option value="" selected disabled>加载端口失败</option>';
+        log(`加载端口失败：${error.message}`, 'error');
     }
-    addFileButton.addEventListener('click', createFileEntry);
+}
 
-    // 终端日志
-    const terminal = {
-        clean: () => output.value = '',
-        write: data => output.value += data,
-        writeLine: data => {
-            // 日志颜色区分
-            let logText = data;
-            if (data.includes('Error:')) logText = `\x1b[31m${data}\x1b[0m`;
-            else if (data.includes('Success:')) logText = `\x1b[32m${data}\x1b[0m`;
-            else if (data.includes('Warning:')) logText = `\x1b[33m${data}\x1b[0m`;
+// 步骤2：连接端口
+connectPortBtn.addEventListener('click', async function () {
+    const portIndex = portSelect.value;
+    if (!portIndex) return;
 
-            output.value += logText + '\n';
-            output.scrollTop = output.scrollHeight;
-        },
-    };
+    try {
+        this.disabled = true;
+        this.textContent = '🔌 正在连接...';
+        log('正在连接串口端口，请稍候...', 'info');
 
-    let loader;
+        // 获取选中的端口
+        const ports = await navigator.serial.getPorts();
+        serialPort = ports[portIndex];
+        await serialPort.open({ baudRate: 115200 });
 
-    // 连接设备
-    connect.addEventListener('click', async () => {
-        try {
-            const device = await requestPort();
-            const transport = new Transport(device);
-            status.textContent = await transport.get_info();
-            status.style.color = 'var(--success)';
+        // 初始化ESP烧录器
+        const transport = new window.Transport(serialPort);
+        espLoader = new window.ESPLoader({
+            baudrate: 115200,
+            transport,
+            terminal: { writeLine: (text) => log(text, 'info') }
+        });
 
-            const loaderOptions = {
-                baudrate: +baudrate.value,
-                transport,
-                terminal,
-            };
-            loader = new ESPLoader(loaderOptions);
-            const chip = await loader.main_fn();
-            board.textContent = chip;
-            board.style.color = 'var(--primary)';
-            terminal.writeLine(`Success: 已连接设备 - ${chip}`);
-        } catch (error) {
-            terminal.writeLine(`Error: 连接失败 - ${error.message}`);
-            status.textContent = '连接失败';
-            status.style.color = 'var(--danger)';
-        }
-    });
+        // 检测ESP芯片（验证与设备关联芯片一致）
+        const detectedChip = await espLoader.main_fn();
+        portStatus.textContent = '已连接';
+        portStatus.style.color = 'var(--success)';
+        burnFirmwareBtn.disabled = false;
+        this.textContent = '🔌 已连接';
+        log(`端口连接成功，检测到芯片：${detectedChip}`, 'success');
 
-    // 擦除Flash
-    erase.addEventListener('click', async () => {
-        if (!loader) {
-            terminal.writeLine('Error: 请先连接设备');
-            return;
-        }
-        try {
-            terminal.writeLine('Info: 开始擦除Flash...');
-            await loader.erase_flash();
-            terminal.writeLine('Success: Flash擦除完成');
-        } catch (error) {
-            terminal.writeLine(`Error: 擦除失败 - ${error.message}`);
-        }
-    });
+    } catch (error) {
+        portStatus.textContent = '连接失败';
+        portStatus.style.color = 'var(--danger)';
+        this.textContent = '🔌 连接端口';
+        this.disabled = false;
+        log(`端口连接失败：${error.message}（请检查设备是否连接/驱动是否正常）`, 'error');
+    }
+});
 
-    // 烧录文件
-    flash.addEventListener('click', async () => {
-        const entries = fileList.querySelectorAll('.file-entry');
-        const fileArray = [];
+// 步骤3：一键烧录固件
+burnFirmwareBtn.addEventListener('click', async function () {
+    if (!selectedFirmware || !espLoader || !serialPort) {
+        log('烧录前请先选择设备并连接端口', 'warn');
+        return;
+    }
 
-        for (const entry of entries) {
-            const fileInput = entry.querySelector('.file-input');
-            const addressInput = entry.querySelector('.address-input');
+    try {
+        this.disabled = true;
+        this.textContent = '⚡ 正在烧录...';
+        burnProgress.classList.remove('hidden');
+        burnProgress.value = 0;
+        log('开始烧录固件，请勿断开设备！', 'info');
 
-            const file = fileInput.files[0];
-            if (!file) {
-                terminal.writeLine('Error: 请选择所有文件');
-                return;
-            }
+        // 构造烧录参数（从固件库获取地址和数据）
+        const fileArray = selectedFirmware.map(firm => ({
+            data: Array.from(firm.data),
+            address: firm.address
+        }));
 
-            // 验证文件类型（支持bin/elf/hex）
-            const allowedTypes = ['application/octet-stream', 'application/x-executable', 'application/intel-hex'];
-            if (!allowedTypes.includes(file.type) && !file.name.endsWith('.bin') && !file.name.endsWith('.elf') && !file.name.endsWith('.hex')) {
-                terminal.writeLine(`Error: 不支持的文件类型 - ${file.name}`);
-                return;
-            }
-
-            const data = await readAsBinaryString(file);
-            fileArray.push({
-                data,
-                address: parseInt(addressInput.value)
-            });
-            terminal.writeLine(`Info: 已添加文件 - ${file.name} (地址: ${addressInput.value})`);
-        }
-
-        if (fileArray.length === 0) {
-            terminal.writeLine('Error: 无文件可烧录');
-            return;
-        }
-
-        if (!loader) {
-            terminal.writeLine('Error: 请先连接设备');
-            return;
-        }
-
-        const flashOptions = {
+        // 执行烧录
+        await espLoader.write_flash({
             fileArray,
             flashSize: "keep",
-            eraseAll: eraseAllCheckbox.checked,
-            compress: compressCheckbox.checked,
+            eraseAll: true,
+            compress: true,
             reportProgress: (index, written, total) => {
-                const progress = (written / total) * 100;
-                progressBar.value = progress;
-                terminal.writeLine(`Progress: 烧录中 ${progress.toFixed(2)}%`);
-            },
-            calculateMD5Hash: image =>
-                CryptoJS.MD5(CryptoJS.enc.Latin1.parse(image)).toString(),
-        };
+                const progress = Math.round((written / total) * 100);
+                burnProgress.value = progress;
+                log(`烧录进度：${progress}%`, 'progress');
+            }
+        });
 
-        try {
-            terminal.writeLine('Info: 开始烧录...');
-            await loader.write_flash(flashOptions);
-            await loader.hard_reset();
-            terminal.writeLine('Success: 烧录完成！设备已重启');
-            progressBar.value = 0;
-        } catch (error) {
-            terminal.writeLine(`Error: 烧录失败 - ${error.message}`);
-            progressBar.value = 0;
-        }
-    });
+        // 烧录完成：重启设备
+        await espLoader.hard_reset();
+        burnProgress.value = 100;
+        log('✅ 固件烧录完成！设备已自动重启', 'success');
+        this.textContent = '⚡ 烧录完成';
+
+    } catch (error) {
+        burnProgress.value = 0;
+        this.textContent = '⚡ 一键烧录固件';
+        this.disabled = false;
+        log(`❌ 烧录失败：${error.message}（请检查设备连接/固件是否正确）`, 'error');
+    } finally {
+        if (serialPort) await serialPort.close();
+    }
 });
+
+// 页面初始化日志
+log('欢迎使用WebESP固件一键烧录工具，请按步骤操作：选择设备→连接端口→烧录固件', 'info');
