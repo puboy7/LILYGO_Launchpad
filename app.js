@@ -1,7 +1,7 @@
 import { firmwareLibrary, deviceList } from './firmware-library.js';
 
-// DOM元素获取（新增设备卡片容器）
-const deviceCards = document.getElementById('device-cards');
+// DOM元素获取
+const deviceSelect = document.getElementById('device-select');
 const portSelect = document.getElementById('port-select');
 const connectPortBtn = document.getElementById('connect-port');
 const burnFirmwareBtn = document.getElementById('burn-firmware');
@@ -15,41 +15,43 @@ const logBox = document.getElementById('log-box');
 
 // 全局变量
 let selectedDevice = null; // 选中的设备（DEVICE_A/B/C/D）
-let selectedChip = null;   // 选中设备关联的芯片
+let selectedChip = null;   // 选中设备关联的芯片（ESP32_C3/ESP8266等）
 let selectedFirmware = null; // 芯片对应的固件
 let serialPort = null; // 串口实例
 let espLoader = null; // ESP烧录核心实例
 
-// 初始化：加载图片卡片式设备列表（核心修改）
+// 初始化：加载ABCD设备列表到下拉框
 function initDeviceList() {
     deviceList.forEach(device => {
-        const card = document.createElement('div');
-        card.className = 'device-card';
-        card.dataset.device = device.value;
-        card.dataset.chip = device.chip;
-        // 卡片内容：图片+设备名称
-        card.innerHTML = `
-      <img src="${device.img}" alt="${device.label}">
-      <p class="device-name">${device.label}</p>
-    `;
-        // 卡片点击事件：选中/取消选中
-        card.addEventListener('click', () => {
-            // 移除所有卡片的选中状态
-            document.querySelectorAll('.device-card').forEach(c => c.classList.remove('active'));
-            // 给当前卡片添加选中状态
-            card.classList.add('active');
-            // 触发设备选择逻辑
-            handleDeviceSelect(device.value, device.chip, device.label);
-        });
-        deviceCards.appendChild(card);
+        const option = document.createElement('option');
+        option.value = device.value;
+        option.textContent = device.label;
+        option.dataset.chip = device.chip; // 存储设备关联的芯片（隐藏，用户不可见）
+        deviceSelect.appendChild(option);
     });
 }
 initDeviceList();
 
-// 设备选择核心逻辑（适配卡片点击）
-function handleDeviceSelect(deviceValue, chipValue, deviceLabel) {
-    selectedDevice = deviceValue;
-    selectedChip = chipValue;
+// 日志输出函数（带颜色、自动滚动）
+function log(text, type = 'info') {
+    const colorMap = {
+        info: '#1e293b',
+        success: '#10b981',
+        error: '#ef4444',
+        warn: '#f97316',
+        progress: '#3b82f6'
+    };
+    const time = new Date().toLocaleTimeString();
+    const logItem = `<span style="color:${colorMap[type]}">[${time}] ${text}</span><br>`;
+    logBox.innerHTML += logItem;
+    logBox.scrollTop = logBox.scrollHeight;
+}
+
+// 步骤1：选择设备（ABCD）→ 自动获取关联芯片→匹配固件
+deviceSelect.addEventListener('change', async function () {
+    const selectedOption = this.options[this.selectedIndex];
+    selectedDevice = this.value;
+    selectedChip = selectedOption?.dataset.chip || null;
 
     if (!selectedDevice || !selectedChip) {
         // 重置状态
@@ -66,7 +68,7 @@ function handleDeviceSelect(deviceValue, chipValue, deviceLabel) {
         return;
     }
 
-    // 显示设备关联的芯片
+    // 显示设备关联的芯片（仅展示，用户无需操作）
     chipInfo.classList.remove('hidden');
     chipName.textContent = selectedChip.replace('_', '-'); // 格式化为ESP32-C3
 
@@ -90,28 +92,13 @@ function handleDeviceSelect(deviceValue, chipValue, deviceLabel) {
     deviceStatus.style.color = 'var(--success)';
     portSelect.disabled = false;
     portSelect.innerHTML = '<option value="" selected disabled>—— 加载端口中 ——</option>';
-    log(`成功选择设备：${deviceLabel}（关联芯片：${selectedChip.replace('_', '-')}），匹配固件：${firmwareNames}`, 'success');
+    log(`成功选择设备：${selectedOption.textContent}（关联芯片：${selectedChip.replace('_', '-')}），匹配固件：${firmwareNames}`, 'success');
 
     // 加载可用串口端口
     loadSerialPorts();
-}
+});
 
-// 日志输出函数（不变）
-function log(text, type = 'info') {
-    const colorMap = {
-        info: '#1e293b',
-        success: '#10b981',
-        error: '#ef4444',
-        warn: '#f97316',
-        progress: '#3b82f6'
-    };
-    const time = new Date().toLocaleTimeString();
-    const logItem = `<span style="color:${colorMap[type]}">[${time}] ${text}</span><br>`;
-    logBox.innerHTML += logItem;
-    logBox.scrollTop = logBox.scrollHeight;
-}
-
-// 加载可用串口端口（不变）
+// 加载可用串口端口
 async function loadSerialPorts() {
     try {
         if (!('serial' in navigator)) {
@@ -126,6 +113,7 @@ async function loadSerialPorts() {
             return;
         }
 
+        // 加载端口到下拉框
         ports.forEach((port, index) => {
             const option = document.createElement('option');
             option.value = index;
@@ -134,6 +122,7 @@ async function loadSerialPorts() {
         });
         log(`成功检测到 ${ports.length} 个可用串口端口`, 'info');
 
+        // 端口选择变化：启用连接按钮
         portSelect.addEventListener('change', function () {
             connectPortBtn.disabled = !this.value;
             portStatus.textContent = '未连接';
@@ -147,7 +136,7 @@ async function loadSerialPorts() {
     }
 }
 
-// 连接端口（不变）
+// 步骤2：连接端口
 connectPortBtn.addEventListener('click', async function () {
     const portIndex = portSelect.value;
     if (!portIndex) return;
@@ -157,10 +146,12 @@ connectPortBtn.addEventListener('click', async function () {
         this.textContent = '🔌 正在连接...';
         log('正在连接串口端口，请稍候...', 'info');
 
+        // 获取选中的端口
         const ports = await navigator.serial.getPorts();
         serialPort = ports[portIndex];
         await serialPort.open({ baudRate: 115200 });
 
+        // 初始化ESP烧录器
         const transport = new window.Transport(serialPort);
         espLoader = new window.ESPLoader({
             baudrate: 115200,
@@ -168,6 +159,7 @@ connectPortBtn.addEventListener('click', async function () {
             terminal: { writeLine: (text) => log(text, 'info') }
         });
 
+        // 检测ESP芯片（验证与设备关联芯片一致）
         const detectedChip = await espLoader.main_fn();
         portStatus.textContent = '已连接';
         portStatus.style.color = 'var(--success)';
@@ -184,7 +176,7 @@ connectPortBtn.addEventListener('click', async function () {
     }
 });
 
-// 一键烧录固件（不变）
+// 步骤3：一键烧录固件
 burnFirmwareBtn.addEventListener('click', async function () {
     if (!selectedFirmware || !espLoader || !serialPort) {
         log('烧录前请先选择设备并连接端口', 'warn');
@@ -198,11 +190,13 @@ burnFirmwareBtn.addEventListener('click', async function () {
         burnProgress.value = 0;
         log('开始烧录固件，请勿断开设备！', 'info');
 
+        // 构造烧录参数（从固件库获取地址和数据）
         const fileArray = selectedFirmware.map(firm => ({
             data: Array.from(firm.data),
             address: firm.address
         }));
 
+        // 执行烧录
         await espLoader.write_flash({
             fileArray,
             flashSize: "keep",
@@ -215,6 +209,7 @@ burnFirmwareBtn.addEventListener('click', async function () {
             }
         });
 
+        // 烧录完成：重启设备
         await espLoader.hard_reset();
         burnProgress.value = 100;
         log('✅ 固件烧录完成！设备已自动重启', 'success');
@@ -230,5 +225,5 @@ burnFirmwareBtn.addEventListener('click', async function () {
     }
 });
 
-// 页面初始化日志（不变）
+// 页面初始化日志
 log('欢迎使用WebESP固件一键烧录工具，请按步骤操作：选择设备→连接端口→烧录固件', 'info');

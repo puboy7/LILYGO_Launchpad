@@ -4,74 +4,253 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WebESP - ESP固件一键烧录工具</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --primary-light: #60a5fa;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-light: #64748b;
+      --border: #e2e8f0;
+      --success: #10b981;
+      --danger: #ef4444;
+      --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      --disabled: #94a3b8;
+      --disabled-bg: #f1f5f9;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Roboto, Oxygen, sans-serif;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 2rem;
+      color: var(--primary);
+    }
+    .logo h1 {
+      font-size: 2rem;
+      font-weight: 700;
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: 0.8rem;
+      box-shadow: var(--shadow);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      transition: all 0.2s ease;
+    }
+    .card:hover {
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+    }
+    .form-step {
+      margin-bottom: 1.8rem;
+    }
+    .step-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.8rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .step-title::before {
+      content: '';
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: var(--primary);
+      color: white;
+      text-align: center;
+      font-size: 0.9rem;
+      line-height: 20px;
+    }
+    .step1::before { content: '1'; }
+    .step2::before { content: '2'; }
+    .step3::before { content: '3'; }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+    select, button {
+      width: 100%;
+      padding: 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: 0.6rem;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+    }
+    select {
+      background-color: white;
+      cursor: pointer;
+    }
+    select:focus, button:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    }
+    button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    button:hover {
+      background-color: var(--primary-light);
+    }
+    button:disabled {
+      background-color: var(--disabled-bg);
+      color: var(--disabled);
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .btn-burn {
+      background-color: #10b981;
+      margin-top: 1rem;
+    }
+    .btn-burn:hover {
+      background-color: #059669;
+    }
+    .firmware-tip {
+      margin-top: 0.6rem;
+      font-size: 0.9rem;
+      color: var(--text-light);
+      padding: 0.6rem;
+      background-color: #f1f5f9;
+      border-radius: 0.4rem;
+    }
+    #firmware-info {
+      color: var(--primary);
+      font-weight: 500;
+    }
+    #chip-info {
+      color: var(--text);
+      font-size: 0.85rem;
+      margin-top: 0.3rem;
+    }
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.8rem;
+      background-color: rgba(59,130,246,0.05);
+      border-radius: 0.6rem;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+    .status-bar span {
+      font-weight: 500;
+    }
+    #device-status, #port-status {
+      color: var(--danger);
+    }
+    progress {
+      width: 100%;
+      height: 1rem;
+      border-radius: 0.5rem;
+      overflow: hidden;
+      margin: 1rem 0;
+    }
+    progress::-webkit-progress-bar {
+      background-color: var(--border);
+    }
+    progress::-webkit-progress-value {
+      background-color: var(--primary);
+    }
+    #log-box {
+      width: 100%;
+      height: 200px;
+      resize: vertical;
+      background-color: white;
+      border: 1px solid var(--border);
+      border-radius: 0.6rem;
+      padding: 1rem;
+      font-family: monospace;
+      font-size: 0.9rem;
+      color: var(--text);
+      white-space: pre-line;
+      overflow-y: auto;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
-    <!-- 页面标题 -->
     <div class="logo">
       <h1>WebESP 固件一键烧录工具</h1>
     </div>
 
-    <!-- 核心左右分栏布局 -->
-    <div class="main-layout">
-      <!-- 左侧：操作区（设备选择+端口连接+烧录） -->
-      <div class="left-panel">
-        <div class="card">
-          <!-- 步骤1：设备选择（图片卡片式） -->
-          <div class="form-step step1">
-            <div class="step-title">选择设备型号</div>
-            <label>点击选择你的设备（自动匹配对应固件）</label>
-            <!-- 设备卡片容器（JS自动加载图片+设备信息） -->
-            <div class="device-cards" id="device-cards">
-              <!-- 示例：<div class="device-card" data-device="DEVICE_A" data-chip="ESP32_C3">
-                <img src="images/device-a.png" alt="设备A">
-                <p class="device-name">设备A</p>
-              </div> -->
-            </div>
-            <!-- 选中设备信息展示 -->
-            <div id="chip-info" class="hidden">关联芯片：<span id="chip-name">未知</span></div>
-            <div class="firmware-tip">
-              已匹配固件：<span id="firmware-info">未选择设备</span>
-            </div>
-          </div>
-
-          <!-- 步骤2：端口连接 -->
-          <div class="form-step step2">
-            <div class="step-title">选择并连接设备端口</div>
-            <label for="port-select">请先连接设备到电脑，再选择端口</label>
-            <select id="port-select" disabled>
-              <option value="" selected disabled>—— 请先选择设备 ——</option>
-            </select>
-            <button id="connect-port" disabled class="port-btn">🔌 连接端口</button>
-          </div>
-
-          <!-- 步骤3：一键烧录 -->
-          <div class="form-step step3">
-            <div class="step-title">开始烧录固件</div>
-            <button id="burn-firmware" disabled class="btn-burn">⚡ 一键烧录固件</button>
-            <progress id="burn-progress" value="0" max="100" class="hidden"></progress>
-          </div>
-
-          <!-- 状态提示 -->
-          <div class="status-bar">
-            <span>设备状态：<span id="device-status">未选择</span></span>
-            <span>端口状态：<span id="port-status">未连接</span></span>
-          </div>
+    <!-- 核心操作卡片 -->
+    <div class="card">
+      <!-- 步骤1：选择设备（ABCD型号，显示关联芯片） -->
+      <div class="form-step step1">
+        <div class="step-title">选择设备型号</div>
+        <label for="device-select">请选择你的设备（自动匹配对应固件）</label>
+        <select id="device-select">
+          <option value="" selected disabled>—— 请选择设备型号 ——</option>
+          <!-- 设备选项由JS自动加载 -->
+        </select>
+        <div id="chip-info" class="hidden">关联芯片：<span id="chip-name">未知</span></div>
+        <div class="firmware-tip">
+          已匹配固件：<span id="firmware-info">未选择设备</span>
         </div>
       </div>
 
-      <!-- 右侧：日志区 -->
-      <div class="right-panel">
-        <div class="card log-card">
-          <div class="step-title">烧录日志</div>
-          <div id="log-box" readonly></div>
-        </div>
+      <!-- 步骤2：选择端口并连接 -->
+      <div class="form-step step2">
+        <div class="step-title">选择并连接设备端口</div>
+        <label for="port-select">请先连接设备到电脑，再选择端口</label>
+        <select id="port-select" disabled>
+          <option value="" selected disabled>—— 请先选择设备 ——</option>
+        </select>
+        <button id="connect-port" disabled style="margin-top: 0.8rem;">🔌 连接端口</button>
       </div>
+
+      <!-- 步骤3：一键烧录 -->
+      <div class="form-step step3">
+        <div class="step-title">开始烧录固件</div>
+        <button id="burn-firmware" disabled class="btn-burn">⚡ 一键烧录固件</button>
+        <progress id="burn-progress" value="0" max="100" class="hidden"></progress>
+      </div>
+
+      <!-- 状态提示 -->
+      <div class="status-bar">
+        <span>设备状态：<span id="device-status">未选择</span></span>
+        <span>端口状态：<span id="port-status">未连接</span></span>
+      </div>
+    </div>
+
+    <!-- 日志输出 -->
+    <div class="card">
+      <div class="step-title" style="margin-bottom: 0.8rem;">烧录日志</div>
+      <div id="log-box" readonly></div>
     </div>
   </div>
 
-  <!-- 引入脚本文件（保持顺序） -->
+  <!-- 引入文件 -->
   <script type="module" src="firmware-library.js"></script>
   <script type="module" src="app.js"></script>
   <script src="esptool.min.js"></script>
