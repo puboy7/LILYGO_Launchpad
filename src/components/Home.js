@@ -62,7 +62,7 @@ const Home = (props) => {
                             <OperaIcon fontSize='inherit' /> <b>Opera</b>
                         </a>
                         <br />
-                        (IOS & Android browsers are not supported)
+                        (IOS & Android browsers are not supported 1)
                         <br />
                         <br />
                         Learn more about&nbsp;
