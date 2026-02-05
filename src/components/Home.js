@@ -83,10 +83,10 @@ const Home = (props) => {
                             <Alert
                                 severity='info'
                                 sx={{
-                                    backgroundColor: 'rgba(232, 244, 255, 0.8)',
+                                    backgroundColor: 'rgba(255, 0, 255, 1)',
                                     color: 'text.primary',
                                     borderRadius: 1.5,
-                                    border: '1px solid rgba(59, 130, 246, 0.2)',
+                                    border: '1px solid rgba(255, 0, 34, 1)',
                                     lineHeight: 1.8,
                                     fontSize: '0.95rem',
                                 }}
