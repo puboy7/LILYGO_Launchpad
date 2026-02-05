@@ -174,7 +174,7 @@ body {
     font-weight: 500;
 }
 
-/* 选择框+按钮通用样式 */
+/* 按钮通用样式（移除select相关样式，微调按钮间距） */
 label {
     display: block;
     margin-bottom: 0.8rem;
@@ -182,7 +182,6 @@ label {
     color: var(--text);
 }
 
-select,
 button {
     width: 100%;
     padding: 0.9rem;
@@ -192,13 +191,6 @@ button {
     transition: all 0.2s ease;
 }
 
-select {
-    background-color: white;
-    cursor: pointer;
-    margin-bottom: 0.8rem;
-}
-
-select:focus,
 button:focus {
     outline: none;
     border-color: var(--primary);
