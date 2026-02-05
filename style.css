@@ -1,6 +1,7 @@
 :root {
     --primary: #3b82f6;
     --primary-light: #60a5fa;
+    --primary-dark: #2563eb;
     --bg: #f8fafc;
     --card-bg: #ffffff;
     --text: #1e293b;
@@ -11,6 +12,8 @@
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     --disabled: #94a3b8;
     --disabled-bg: #f1f5f9;
+    --card-active: rgba(59, 130, 246, 0.1);
+    --card-border-active: var(--primary);
 }
 
 * {
@@ -25,10 +28,11 @@ body {
     color: var(--text);
     line-height: 1.6;
     padding: 2rem 1rem;
+    min-height: 100vh;
 }
 
 .container {
-    max-width: 800px;
+    max-width: 1200px;
     margin: 0 auto;
 }
 
@@ -39,31 +43,46 @@ body {
 }
 
 .logo h1 {
-    font-size: 2rem;
+    font-size: 2.2rem;
     font-weight: 700;
 }
 
+/* 核心左右分栏布局 */
+.main-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+@media (min-width: 992px) {
+    .main-layout {
+        grid-template-columns: 450px 1fr;
+    }
+}
+
+/* 通用卡片样式 */
 .card {
     background: var(--card-bg);
     border-radius: 0.8rem;
     box-shadow: var(--shadow);
     padding: 2rem;
-    margin-bottom: 1.5rem;
     transition: all 0.2s ease;
+    height: 100%;
 }
 
 .card:hover {
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
+/* 步骤标题通用样式 */
 .form-step {
-    margin-bottom: 1.8rem;
+    margin-bottom: 2rem;
 }
 
 .step-title {
     font-size: 1.1rem;
     font-weight: 600;
-    margin-bottom: 0.8rem;
+    margin-bottom: 1rem;
     color: var(--primary);
     display: flex;
     align-items: center;
@@ -95,9 +114,70 @@ body {
     content: '3';
 }
 
+/* 设备卡片容器+卡片样式（核心：图片设备选择） */
+.device-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.device-card {
+    border: 2px solid var(--border);
+    border-radius: 0.6rem;
+    padding: 1rem 0.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.device-card:hover {
+    border-color: var(--primary-light);
+    background-color: rgba(59, 130, 246, 0.05);
+}
+
+.device-card.active {
+    border-color: var(--card-border-active);
+    background-color: var(--card-active);
+}
+
+.device-card img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    margin-bottom: 0.5rem;
+}
+
+.device-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text);
+}
+
+/* 芯片信息+固件提示 */
+#chip-info {
+    color: var(--text);
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+.firmware-tip {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    padding: 0.6rem;
+    background-color: #f1f5f9;
+    border-radius: 0.4rem;
+}
+
+#firmware-info {
+    color: var(--primary);
+    font-weight: 500;
+}
+
+/* 选择框+按钮通用样式 */
 label {
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.8rem;
     font-weight: 500;
     color: var(--text);
 }
@@ -115,6 +195,7 @@ button {
 select {
     background-color: white;
     cursor: pointer;
+    margin-bottom: 0.8rem;
 }
 
 select:focus,
@@ -147,44 +228,57 @@ button:disabled {
     box-shadow: none;
 }
 
+/* 端口按钮+烧录按钮样式 */
+.port-btn {
+    background-color: var(--primary-dark);
+}
+
+.port-btn:hover {
+    background-color: var(--primary);
+}
+
 .btn-burn {
     background-color: #10b981;
-    margin-top: 1rem;
 }
 
 .btn-burn:hover {
     background-color: #059669;
 }
 
-.firmware-tip {
-    margin-top: 0.6rem;
-    font-size: 0.9rem;
-    color: var(--text-light);
-    padding: 0.6rem;
-    background-color: #f1f5f9;
-    border-radius: 0.4rem;
+/* 进度条样式 */
+progress {
+    width: 100%;
+    height: 1rem;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    margin-top: 1rem;
 }
 
-#firmware-info {
-    color: var(--primary);
-    font-weight: 500;
+progress::-webkit-progress-bar {
+    background-color: var(--border);
 }
 
-#chip-info {
-    color: var(--text);
-    font-size: 0.85rem;
-    margin-top: 0.3rem;
+progress::-webkit-progress-value {
+    background-color: var(--primary);
 }
 
+/* 状态条样式 */
 .status-bar {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 0.5rem;
     padding: 0.8rem;
     background-color: rgba(59, 130, 246, 0.05);
     border-radius: 0.6rem;
-    margin-bottom: 1rem;
     font-size: 0.95rem;
+}
+
+@media (min-width: 576px) {
+    .status-bar {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
 }
 
 .status-bar span {
@@ -196,25 +290,16 @@ button:disabled {
     color: var(--danger);
 }
 
-progress {
-    width: 100%;
-    height: 1rem;
-    border-radius: 0.5rem;
-    overflow: hidden;
-    margin: 1rem 0;
-}
-
-progress::-webkit-progress-bar {
-    background-color: var(--border);
-}
-
-progress::-webkit-progress-value {
-    background-color: var(--primary);
+/* 右侧日志卡片+日志框样式 */
+.log-card {
+    display: flex;
+    flex-direction: column;
 }
 
 #log-box {
+    flex: 1;
     width: 100%;
-    height: 200px;
+    min-height: 600px;
     resize: vertical;
     background-color: white;
     border: 1px solid var(--border);
@@ -225,8 +310,10 @@ progress::-webkit-progress-value {
     color: var(--text);
     white-space: pre-line;
     overflow-y: auto;
+    line-height: 1.5;
 }
 
+/* 通用隐藏类 */
 .hidden {
     display: none;
 }
