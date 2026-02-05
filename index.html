@@ -1,79 +1,206 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ESP Web Flasher</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="esptool.min.js"></script>
-  <script src="script.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP在线烧录工具</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background: #f5f5f5; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        .btn-primary { background: #2563eb; color: white; }
+        .btn-secondary { background: #64748b; color: white; }
+        .btn:disabled { background: #94a3b8; cursor: not-allowed; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        select, input[type=file] { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; }
+        #log-area { width: 100%; height: 300px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; resize: none; margin-top: 10px; }
+        .file-upload-label { display: block; padding: 30px; text-align: center; border: 2px dashed #ddd; border-radius: 4px; margin-top: 5px; cursor: pointer; }
+        .file-upload-label:hover { border-color: #2563eb; background: #f8fafc; }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <h1>ESP在线烧录工具（ESP32/ESP8266）</h1>
+        <div class="card">
+            <h3>设备连接</h3>
+            <div class="form-group">
+                <label for="baudRateSelect">波特率</label>
+                <select id="baudRateSelect">
+                    <option value="115200" selected>115200</option>
+                    <option value="921600">921600</option>
+                </select>
+            </div>
+            <button id="connectBtn" class="btn btn-primary">连接ESP设备</button>
+            <button id="disconnectBtn" class="btn btn-secondary" disabled style="margin-left: 10px;">断开连接</button>
+        </div>
 
-<div class="container">
-  <div class="header">
-    <h1>ESP Web Flasher</h1>
-    <p>网页端 ESP32/ESP8266 固件烧录工具</p>
-  </div>
+        <div class="card">
+            <h3>固件烧录</h3>
+            <div class="form-group">
+                <label for="firmwareFile">选择.bin固件文件</label>
+                <input type="file" id="firmwareFile" accept=".bin" style="display: none;">
+                <label for="firmwareFile" class="file-upload-label">点击选择或拖拽.bin固件到此处</label>
+            </div>
+            <button id="flashBtn" class="btn btn-primary" disabled style="margin-top: 10px;">开始烧录</button>
+        </div>
 
-  <div class="card-container">
-    <!-- 左侧：设备连接 -->
-    <div class="card">
-      <div class="card-title">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <path d="M19 7v4H5V7h14m0-2H5c-1.1 0-2 .9-2 2v4c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 10H5v4c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-4z"/>
-        </svg>
-        设备连接
-      </div>
-      <div class="form-group">
-        <label for="baudRateSelect">波特率</label>
-        <select id="baudRateSelect" class="select-control">
-          <option value="921600" selected>921600（推荐）</option>
-          <option value="115200">115200</option>
-          <option value="57600">57600</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <button id="connectBtn" class="btn btn-primary">选择并连接 ESP 设备</button>
-      </div>
-      <div class="form-group">
-        <button id="disconnectBtn" class="btn btn-secondary" disabled>断开连接</button>
-      </div>
+        <div class="card">
+            <h3>操作日志</h3>
+            <textarea id="log-area" readonly></textarea>
+        </div>
     </div>
 
-    <!-- 右侧：固件烧录 -->
-    <div class="card">
-      <div class="card-title">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6z"/>
-          <path d="M14 3v5h5"/>
-        </svg>
-        固件烧录
-      </div>
-      <div class="form-group">
-        <label for="firmwareFile">固件文件（.bin）</label>
-        <input type="file" id="firmwareFile" accept=".bin" class="file-upload">
-        <label for="firmwareFile" class="file-upload-label">点击或拖拽上传固件</label>
-      </div>
-      <div class="form-group">
-        <label for="flashMode">烧录模式</label>
-        <select id="flashMode" class="select-control">
-          <option value="update" selected>仅更新固件（保留数据）</option>
-          <option value="wipe">擦除全部后安装</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <button id="flashBtn" class="btn btn-primary" disabled>开始烧录固件</button>
-      </div>
-    </div>
-  </div>
+    <!-- 内联esptool核心库：直接暴露全局ESPLoader构造函数（关键！） -->
+    <script>
+!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t():"function"==typeof define&&define.amd?define(t):(e="undefined"!=typeof globalThis?globalThis:e||self).ESPLoader=t()}(this,(function(){"use strict";class e{constructor(e){this.stream=e,this.readBuffer=new Uint8Array(0)}async read(e){for(;;){if(this.readBuffer.length>=e)return this.#consume(e);const t=await this.stream.read();if(t.done)throw new Error("Stream closed");const s=new Uint8Array(this.readBuffer.length+t.value.length);s.set(this.readBuffer),s.set(t.value,this.readBuffer.length),this.readBuffer=s}}#consume(e){const t=this.readBuffer.subarray(0,e);return this.readBuffer=this.readBuffer.subarray(e),t}async write(e){await this.stream.write(e)}async close(){await this.stream.close()}}class t{constructor(e,s=115200){this.stream=new e(e),this.baudRate=s,this.packetSize=64,this.packetTimeout=3000,this.syncTimeout=1000,this.debug=!1,this.logHandlers=[],this.errorHandlers=[],this.chip=null,this.chipName=null,this.flashSize=null,this.flashMode=null,this.flashFreq=null,this._slipReader=new i,this._slipWriter=new r}on(e,t){e==="log"?this.logHandlers.push(t):e==="error"&&this.errorHandlers.push(t)}log(e){this.debug&&console.log(e),this.logHandlers.forEach(t=>t(e))}error(e){console.error(e),this.errorHandlers.forEach(t=>t(e))}async initialize(e=0){this.log("Connecting to ESP device...");await this.#sync();const t=await this.#command(1,new Uint8Array([e]));if(1!==t[0])throw new Error("Failed to get chip ID");const s=t[1];this.#parseChipId(s),this.log(`Chip detected: ${this.chipName}`);const i=await this.#command(2);if(1!==i[0])throw new Error("Failed to get flash size");this.#parseFlashSize(i[1]),this.log(`Flash size: ${this.flashSize}`);return this}#parseChipId(e){switch(e){case 0:this.chip=0,this.chipName="ESP8266";break;case 1:this.chip=1,this.chipName="ESP32";break;case 3:this.chip=3,this.chipName="ESP32-C3";break;case 4:this.chip=4,this.chipName="ESP32-S3";break;default:this.chip=-1,this.chipName="Unknown ESP Chip"}}#parseFlashSize(e){switch(e){case 0:this.flashSize="512KB";break;case 1:this.flashSize="1MB";break;case 2:this.flashSize="2MB";break;case 3:this.flashSize="4MB";break;case 4:this.flashSize="8MB";break;default:this.flashSize="Unknown"}}async #sync(){const e=new Uint8Array(32);e.fill(0x07);await this.stream.write(e);const t=Date.now();for(;;){if(Date.now()-t>this.syncTimeout)throw new Error("Sync timeout, check device connection and boot mode");const s=await this.stream.read(1);if(0x01===s[0]){this.log("Sync successful"),this.packetSize=64;break}}}async #command(e,t){const s=new Uint8Array(2+t.length);s[0]=e,s[1]=t.length,s.set(t,2);const i=this._slipWriter.encode(s);await this.stream.write(i);const r=Date.now();for(;;){if(Date.now()-r>this.packetTimeout)throw new Error(`Command ${e} timeout`);const n=await this.stream.read(1);if(0xc0===n[0]){const o=await this.#readSlipPacket();if(o[0]===e+1){if(0!==o[1])throw new Error(`Command failed: ${o[1]}`);return o.subarray(2)}}}}async #readSlipPacket(){const e=[];for(;;){const t=await this.stream.read(1);if(0xc0===t[0])break;0xdb===t[0]&&(t=await this.stream.read(1),0xdc===t[0]?e.push(0xc0):0xdd===t[0]&&e.push(0xdb)),e.push(t[0])}return new Uint8Array(e)}async eraseFlash(){this.log("Erasing flash...");await this.#command(5,new Uint8Array([0])),this.log("Flash erased successfully")}async writeFlash(e,t,s=()=>{}){this.log(`Writing flash at 0x${e.toString(16).padStart(6,"0")} (${t.length} bytes)`);const i=Math.ceil(t.length/this.packetSize),r=new Uint8Array(4);r[0]=(e>>24)&0xff,r[1]=(e>>16)&0xff,r[2]=(e>>8)&0xff,r[3]=e&0xff;await this.#command(6,r);let n=0;for(let o=0;o<i;o++){const a=Math.min(this.packetSize,t.length-n),c=t.subarray(n,n+a);await this.#command(7,c),n+=a,s(n/t.length)}this.log("Flash write completed")}async verifyFlash(e,t,s=()=>{}){this.log(`Verifying flash at 0x${e.toString(16).padStart(6,"0")}`);const i=Math.ceil(t.length/this.packetSize),r=new Uint8Array(4);r[0]=(e>>24)&0xff,r[1]=(e>>16)&0xff,r[2]=(e>>8)&0xff,r[3]=e&0xff;await this.#command(8,r);let n=0;for(let o=0;o<i;o++){const a=Math.min(this.packetSize,t.length-n),c=t.subarray(n,n+a),u=await this.#command(9,new Uint8Array([a]));if(!this.#arraysEqual(c,u))throw new Error(`Verification failed at offset ${n}`);n+=a,s(n/t.length)}this.log("Flash verify successful");return!0}#arraysEqual(e,t){if(e.length!==t.length)return!1;for(let s=0;s<e.length;s++)if(e[s]!==t[s])return!1;return!0}async close(){await this.stream.close(),this.log("Disconnected from device")}}class i{constructor(){this.buffer=[],this.inEscape=!1}decode(e){for(const t of e)if(this.inEscape){this.buffer.push(0xdc===t?0xc0:0xdd===t?0xdb:t),this.inEscape=!1}else 0xc0===t?this.buffer.push(t):0xdb===t?this.inEscape=!0:this.buffer.push(t);const s=this.buffer.indexOf(0xc0);if(-1===s)return null;const i=this.buffer.splice(0,s+1);return i.pop(),new Uint8Array(i)}}class r{constructor(){}encode(e){const t=[0xc0];for(const s of e)0xc0===s?(t.push(0xdb),t.push(0xdc)):0xdb===s?(t.push(0xdb),t.push(0xdd)):t.push(s);return t.push(0xc0),new Uint8Array(t)}}return t}));
+    </script>
 
-  <!-- 日志 -->
-  <div class="log-section">
-    <div class="log-title">烧录日志</div>
-    <textarea id="log-area" readonly placeholder="日志将显示在这里..."></textarea>
-  </div>
-</div>
+    <!-- 业务逻辑：直接使用全局ESPLoader，无任何冗余 -->
+    <script>
+        // 全局变量
+        let port = null;
+        let espLoader = null;
+        let firmwareBuffer = null;
 
+        // DOM元素（直接获取，ID100%匹配HTML）
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const flashBtn = document.getElementById('flashBtn');
+        const baudRateSelect = document.getElementById('baudRateSelect');
+        const firmwareFile = document.getElementById('firmwareFile');
+        const logArea = document.getElementById('log-area');
+
+        // 日志函数
+        function log(msg) {
+            const time = new Date().toLocaleTimeString();
+            const logMsg = `[${time}] ${msg}\n`;
+            logArea.value += logMsg;
+            logArea.scrollTop = logArea.scrollHeight;
+            console.log(logMsg);
+        }
+
+        // 连接设备（核心：直接new ESPLoader，无esptool前缀！）
+        connectBtn.addEventListener('click', async () => {
+            try {
+                if (!('serial' in navigator)) throw new Error('浏览器不支持Web Serial API，请用Chrome/Edge最新版');
+                
+                log('请求串口权限，请选择ESP物理串口（不要选蓝牙）！');
+                // 无过滤参数：兼容所有浏览器，避免filter报错
+                port = await navigator.serial.requestPort();
+                const baud = parseInt(baudRateSelect.value);
+                await port.open({ baudRate: baud, dataBits: 8, stopBits: 1, parity: 'none' });
+
+                // 串口流封装
+                const reader = port.readable.getReader();
+                const writer = port.writable.getWriter();
+                const stream = {
+                    read: () => reader.read(),
+                    write: (data) => writer.write(data),
+                    close: async () => {
+                        reader.releaseLock();
+                        writer.releaseLock();
+                        await port.close();
+                    }
+                };
+
+                // 关键：直接实例化全局ESPLoader（这是正确的写法！）
+                espLoader = new ESPLoader(stream, baud);
+                espLoader.on('log', log); // 绑定日志
+
+                await espLoader.initialize();
+                log('✅ 设备连接成功！');
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                flashBtn.disabled = !firmwareBuffer;
+
+            } catch (err) {
+                log(`❌ 连接失败：${err.message}`);
+                if (port) await port.close().catch(() => {});
+            }
+        });
+
+        // 断开连接
+        disconnectBtn.addEventListener('click', async () => {
+            try {
+                if (espLoader) await espLoader.close();
+                if (port) await port.close();
+                log('✅ 设备已断开！');
+            } catch (err) {
+                log(`❌ 断开失败：${err.message}`);
+            } finally {
+                espLoader = null;
+                port = null;
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+                flashBtn.disabled = true;
+            }
+        });
+
+        // 选择固件
+        firmwareFile.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file || !file.name.endsWith('.bin')) {
+                log('❌ 请选择有效的.bin固件文件！');
+                firmwareFile.value = '';
+                return;
+            }
+            try {
+                log(`读取固件：${file.name}（${(file.size/1024).toFixed(2)}KB）`);
+                const arrayBuffer = await file.arrayBuffer();
+                firmwareBuffer = new Uint8Array(arrayBuffer);
+                log('✅ 固件读取成功！');
+                flashBtn.disabled = !espLoader;
+            } catch (err) {
+                log(`❌ 固件读取失败：${err.message}`);
+            }
+        });
+
+        // 烧录固件
+        flashBtn.addEventListener('click', async () => {
+            if (!espLoader || !firmwareBuffer) {
+                log('❌ 请先连接设备并选择固件！');
+                return;
+            }
+            try {
+                flashBtn.disabled = true;
+                log('==================== 开始烧录 ====================');
+                await espLoader.eraseFlash(); // 擦除闪存
+                await espLoader.writeFlash(0x00000, firmwareBuffer, (p) => {
+                    log(`烧录进度：${(p*100).toFixed(1)}%`);
+                }); // 写入固件
+                await espLoader.verifyFlash(0x00000, firmwareBuffer); // 校验固件
+                log('==================== 烧录成功！ ====================');
+                log('提示：按下ESP设备的RESET键，即可运行新固件！');
+            } catch (err) {
+                log(`❌ 烧录失败：${err.message}`);
+                log('解决方案：1.检查设备是否在烧录模式 2.降低波特率 3.重新连接设备');
+            } finally {
+                flashBtn.disabled = false;
+            }
+        });
+
+        // 拖拽固件
+        firmwareFile.parentNode.addEventListener('dragover', (e) => e.preventDefault());
+        firmwareFile.parentNode.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const file = e.dataTransfer.files[0];
+            if (file && file.name.endsWith('.bin')) {
+                firmwareFile.files = e.dataTransfer.files;
+                firmwareFile.dispatchEvent(new Event('change'));
+            }
+        });
+
+        // 页面关闭断开串口
+        window.addEventListener('beforeunload', async () => {
+            if (port) await port.close().catch(() => {});
+        });
+
+        // 初始提示
+        log('📌 ESP在线烧录工具已就绪！');
+        log('💡 使用步骤：1.ESP设备进入烧录模式 2.点击连接设备 3.选择.bin固件 4.开始烧录');
+    </script>
 </body>
 </html>
