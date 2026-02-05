@@ -63,10 +63,9 @@
       </div>
     </div>
   </div>
-
-  <!-- 引入脚本文件（保持顺序） -->
-  <script type="module" src="firmware-library.js"></script>
-  <script type="module" src="app.js"></script>
-  <script src="esptool.min.js"></script>
+<!-- 引入脚本文件（保持此顺序，均为module类型） -->
+<script type="module" src="firmware-library.js"></script>
+<script type="module" src="esptool.min.js"></script> <!-- 先引核心依赖库 -->
+<script type="module" src="app.js"></script>         <!-- 后引业务逻辑（依赖前两者） -->
 </body>
 </html>
