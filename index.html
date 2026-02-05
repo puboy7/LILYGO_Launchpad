@@ -23,7 +23,12 @@
             <div class="step-title">选择设备型号</div>
             <label>点击选择你的设备（自动匹配对应固件）</label>
             <!-- 设备卡片容器（JS自动加载图片+设备信息） -->
-            <div class="device-cards" id="device-cards"></div>
+            <div class="device-cards" id="device-cards">
+              <!-- 示例：<div class="device-card" data-device="DEVICE_A" data-chip="ESP32_C3">
+                <img src="images/device-a.png" alt="设备A">
+                <p class="device-name">设备A</p>
+              </div> -->
+            </div>
             <!-- 选中设备信息展示 -->
             <div id="chip-info" class="hidden">关联芯片：<span id="chip-name">未知</span></div>
             <div class="firmware-tip">
@@ -31,11 +36,13 @@
             </div>
           </div>
 
-          <!-- 步骤2：端口连接（移除下拉框，仅保留按钮） -->
+          <!-- 步骤2：端口连接 -->
           <div class="form-step step2">
-            <div class="step-title">连接设备端口</div>
-            <label>点击按钮后在弹窗中选择你的ESP设备端口</label>
-            <!-- 仅保留连接按钮，无下拉框 -->
+            <div class="step-title">选择并连接设备端口</div>
+            <label for="port-select">请先连接设备到电脑，再选择端口</label>
+            <select id="port-select" disabled>
+              <option value="" selected disabled>—— 请先选择设备 ——</option>
+            </select>
             <button id="connect-port" disabled class="port-btn">🔌 连接端口</button>
           </div>
 
@@ -63,9 +70,10 @@
       </div>
     </div>
   </div>
-<!-- 引入脚本文件（保持此顺序，均为module类型） -->
-<script type="module" src="firmware-library.js"></script>
-<script type="module" src="esptool.min.js"></script> <!-- 先引核心依赖库 -->
-<script type="module" src="app.js"></script>         <!-- 后引业务逻辑（依赖前两者） -->
+
+  <!-- 引入脚本文件（保持顺序） -->
+  <script type="module" src="firmware-library.js"></script>
+  <script type="module" src="app.js"></script>
+  <script src="esptool.min.js"></script>
 </body>
 </html>

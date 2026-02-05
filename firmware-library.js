@@ -1,7 +1,7 @@
 // 设备列表（ABCD型号+关联芯片+产品图片地址，图片放在images文件夹）
 export const deviceList = [
     {
-        label: "T-Deck",
+        label: "设备A",
         value: "DEVICE_A",
         chip: "ESP32_C3",
         img: "images/device-a.png" // 设备A产品图片
