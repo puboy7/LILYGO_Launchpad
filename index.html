@@ -36,24 +36,24 @@
           </div>
         </div>
 
+        <!-- 快捷烧录 -->
         <div class="function-card active" id="quick-card">
           <div class="function-title" data-i18n="quickConfigTitle">快捷烧录配置</div>
           <label data-i18n="selectDeviceLabel">点击设备图片选择</label>
           <div class="device-cards" id="device-cards"></div>
-          <div id="chip-info" class="hidden mt-1">Chip: <span id="chip-name">Unknown</span></div>
 
           <div class="mt-2">
             <select id="quick-baudrate" style="display:none;">
               <option value="115200" selected>115200</option>
             </select>
             <button id="quick-connect" class="port-btn mt-1" data-i18n="connectPortBtn">🔌 连接设备端口</button>
-            <!-- 单行状态：端口连接状态（红绿点） -->
+            <!-- 单行红绿圆点状态 -->
             <div class="status-row mt-1">
               <span>
                 <span class="status-dot disconnected" id="port-dot"></span>
-                <span id="port-text">未连接</span>
+                <span id="port-text" data-i18n="disconnectedText">未连接</span>
               </span>
-              <span id="device-label">未选择设备</span>
+              <span id="device-label" data-i18n="noDeviceText">未选择设备</span>
             </div>
           </div>
 
@@ -69,6 +69,7 @@
           <progress id="quick-progress" value="0" max="100" class="mt-1"></progress>
         </div>
 
+        <!-- 自定义烧录 -->
         <div class="function-card" id="custom-card">
           <div class="function-title" data-i18n="customConfigTitle">自定义烧录配置</div>
           <div>
@@ -76,10 +77,11 @@
               <option value="115200" selected>115200</option>
             </select>
             <button id="custom-connect" class="port-btn mt-1" data-i18n="connectPortBtn">🔌 连接设备端口</button>
+            <!-- 单行红绿圆点状态 -->
             <div class="status-row mt-1">
               <span>
                 <span class="status-dot disconnected" id="c-port-dot"></span>
-                <span id="c-port-text">未连接</span>
+                <span id="c-port-text" data-i18n="disconnectedText">未连接</span>
               </span>
             </div>
           </div>
@@ -88,7 +90,7 @@
             <label data-i18n="firmwareListLabel">固件文件列表（自定义地址）</label>
             <div id="custom-file-list" class="file-list">
               <div class="file-entry">
-                <input type="text" class="address-input" value="0x000000">
+                <input type="text" class="address-input" value="0x000000" placeholder="Flash地址">
                 <input type="file" class="file-input">
                 <button class="remove-file">-</button>
               </div>
@@ -100,22 +102,25 @@
           <progress id="custom-progress" value="0" max="100" class="mt-1"></progress>
         </div>
 
+        <!-- 擦除Flash -->
         <div class="function-card" id="erase-card">
           <div class="function-title" data-i18n="eraseConfigTitle">擦除Flash配置</div>
           <select id="erase-baudrate" style="display:none;">
             <option value="115200" selected>115200</option>
           </select>
           <button id="erase-connect" class="port-btn mt-1" data-i18n="connectSerialBtn">🔌 连接串口</button>
+          <!-- 单行红绿圆点状态 -->
           <div class="status-row mt-1">
             <span>
               <span class="status-dot disconnected" id="e-port-dot"></span>
-              <span id="e-port-text">未连接</span>
+              <span id="e-port-text" data-i18n="disconnectedText">未连接</span>
             </span>
           </div>
           <button id="erase-flash" class="erase-btn mt-2 w-100" data-i18n="eraseBtn">🗑️ 执行擦除Flash</button>
         </div>
       </div>
 
+      <!-- 日志区 -->
       <div class="right-panel">
         <div class="card log-card">
           <div class="function-title" data-i18n="logTitle">操作日志</div>
