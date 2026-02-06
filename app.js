@@ -3,8 +3,8 @@ import { ready } from 'https://lsong.org/scripts/dom.js';
 import { readAsBinaryString } from 'https://lsong.org/scripts/file.js';
 import { requestPort } from 'https://lsong.org/scripts/serialport.js';
 import { ESPLoader, Transport } from './esptool.min.js';
-// 导入设备配置（匹配图片卡片）
-import { deviceList, firmwareAddressMap } from './firmware-library.js';
+// 导入设备配置
+import { deviceList } from './firmware-library.js';
 
 ready(() => {
     // 保留你源码的DOM元素
@@ -21,17 +21,62 @@ ready(() => {
     const eraseAllCheckbox = document.getElementById('erase-all');
     const compressCheckbox = document.getElementById('compress');
 
-    // 新增：设备卡片相关元素
+    // 新增：模式切换相关元素
+    const modeRadios = document.querySelectorAll('input[name="burn-mode"]');
     const deviceCards = document.getElementById('device-cards');
     const chipInfo = document.getElementById('chip-info');
     const chipName = document.getElementById('chip-name');
 
-    // 全局变量（保留你的loader + 新增设备选择变量）
+    // 全局变量
     let loader;
-    let selectedDevice = null; // 选中的设备
-    let selectedChip = null;   // 选中设备的芯片
+    let selectedDevice = null;
+    let currentMode = 'quick'; // 默认快捷模式
 
-    // 第一步：初始化设备图片卡片（新增逻辑，不影响你的源码）
+    // 第一步：模式切换核心逻辑（新增）
+    function switchMode(mode) {
+        currentMode = mode;
+        // 更新body类名，控制样式显隐
+        document.body.className = mode === 'quick' ? 'quick-mode' : 'custom-mode';
+
+        // 快捷模式：重置为0x0地址+只读+仅1个文件项
+        if (mode === 'quick') {
+            // 清空多余文件项
+            const fileEntries = fileList.querySelectorAll('.file-entry');
+            fileEntries.forEach((entry, index) => {
+                if (index > 0) entry.remove();
+            });
+            // 地址固定0x0且只读
+            const addressInput = fileList.querySelector('.address-input');
+            addressInput.value = '0x000000';
+            addressInput.readOnly = true;
+            // 提示
+            terminal.writeLine('Info: 切换到【快捷烧录模式】- 选设备后自动用0x0地址烧录');
+        }
+        // 自定义模式：地址可编辑+显示添加文件按钮
+        else {
+            // 地址可编辑
+            const addressInput = fileList.querySelector('.address-input');
+            addressInput.readOnly = false;
+            // 重置设备选择状态
+            selectedDevice = null;
+            board.textContent = '未选择设备（自定义模式）';
+            board.style.color = 'var(--text)';
+            chipInfo.classList.add('hidden');
+            // 提示
+            terminal.writeLine('Info: 切换到【自定义烧录模式】- 可自由添加文件/修改地址');
+        }
+    }
+
+    // 绑定模式切换事件
+    modeRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            if (radio.checked) {
+                switchMode(radio.value);
+            }
+        });
+    });
+
+    // 第二步：初始化设备图片卡片（仅快捷模式生效）
     function initDeviceList() {
         deviceList.forEach(device => {
             const card = document.createElement('div');
@@ -42,55 +87,41 @@ ready(() => {
         <img src="${device.img}" alt="${device.label}">
         <p class="device-name">${device.label}</p>
       `;
-            // 卡片点击事件：选择设备 + 自动填充固件地址
+            // 卡片点击事件（仅快捷模式生效）
             card.addEventListener('click', () => {
+                if (currentMode !== 'quick') return;
+
                 // 移除其他卡片选中状态
                 document.querySelectorAll('.device-card').forEach(c => c.classList.remove('active'));
                 card.classList.add('active');
 
                 // 记录选中设备信息
                 selectedDevice = device.value;
-                selectedChip = device.chip;
+                const chip = device.chip;
 
                 // 显示芯片信息
                 chipInfo.classList.remove('hidden');
-                chipName.textContent = selectedChip.replace('_', '-');
+                chipName.textContent = chip.replace('_', '-');
 
-                // 自动填充该设备的固件地址（从配置文件读取）
-                if (firmwareAddressMap[selectedDevice]) {
-                    const fileEntries = fileList.querySelectorAll('.file-entry');
-                    // 清空原有文件项
-                    fileEntries.forEach((entry, index) => {
-                        if (index > 0) entry.remove();
-                    });
-                    // 填充默认地址
-                    const firstAddressInput = fileList.querySelector('.address-input');
-                    firstAddressInput.value = firmwareAddressMap[selectedDevice].main;
+                // 快捷模式：强制地址为0x0
+                const addressInput = fileList.querySelector('.address-input');
+                addressInput.value = '0x000000';
 
-                    // 若有分区表，自动添加第二个文件项
-                    if (firmwareAddressMap[selectedDevice].partition) {
-                        createFileEntry();
-                        const secondAddressInput = fileList.querySelectorAll('.address-input')[1];
-                        secondAddressInput.value = firmwareAddressMap[selectedDevice].partition;
-                    }
-
-                    terminal.writeLine(`Success: 选中设备 ${device.label}，已自动填充固件地址`);
-                }
-
-                board.textContent = `已选择${device.label}(${selectedChip.replace('_', '-')})`;
+                board.textContent = `已选择${device.label}(${chip.replace('_', '-')}) - 地址固定0x0`;
                 board.style.color = 'var(--primary)';
+                terminal.writeLine(`Success: 选中${device.label}，快捷模式地址固定为0x000000`);
             });
             deviceCards.appendChild(card);
         });
     }
     initDeviceList();
 
-    // 第二步：保留你源码的文件管理逻辑
+    // 第三步：保留你源码的文件管理逻辑
     function createFileEntry() {
         const entry = document.createElement('div');
         entry.className = 'file-entry';
         entry.innerHTML = `
-      <input type="text" class="address-input" value="0x000000" placeholder="Flash地址">
+      <input type="text" class="address-input" value="0x000000" placeholder="Flash地址" ${currentMode === 'quick' ? 'readonly' : ''}>
       <input type="file" class="file-input">
       <button class="remove-file">-</button>
     `;
@@ -112,12 +143,12 @@ ready(() => {
     }
     addFileButton.addEventListener('click', createFileEntry);
 
-    // 第三步：保留你源码的终端日志逻辑（彩色日志）
+    // 第四步：保留你源码的终端日志逻辑
     const terminal = {
         clean: () => output.value = '',
         write: data => output.value += data,
         writeLine: data => {
-            // 日志颜色区分（保留你的逻辑）
+            // 日志颜色区分
             let logText = data;
             if (data.includes('Error:')) logText = `\x1b[31m${data}\x1b[0m`;
             else if (data.includes('Success:')) logText = `\x1b[32m${data}\x1b[0m`;
@@ -128,13 +159,8 @@ ready(() => {
         },
     };
 
-    // 第四步：保留你源码的连接设备逻辑（适配新UI）
+    // 第五步：保留你源码的连接设备逻辑
     connect.addEventListener('click', async () => {
-        // 新增：检查是否选择设备
-        if (!selectedDevice) {
-            terminal.writeLine('Warning: 建议先选择设备型号，再连接端口');
-        }
-
         try {
             connect.disabled = true;
             connect.textContent = '🔌 正在连接...';
@@ -154,7 +180,12 @@ ready(() => {
             };
             loader = new ESPLoader(loaderOptions);
             const chip = await loader.main_fn();
-            board.textContent = chip;
+            // 模式适配：快捷模式显示设备+地址，自定义模式仅显示芯片
+            if (currentMode === 'quick' && selectedDevice) {
+                board.textContent = `${board.textContent} - 已连接`;
+            } else {
+                board.textContent = `已连接 - ${chip}`;
+            }
             board.style.color = 'var(--primary)';
             terminal.writeLine(`Success: 已连接设备 - ${chip}`);
 
@@ -169,7 +200,7 @@ ready(() => {
         }
     });
 
-    // 第五步：保留你源码的擦除Flash逻辑
+    // 第六步：保留你源码的擦除Flash逻辑
     erase.addEventListener('click', async () => {
         if (!loader) {
             terminal.writeLine('Error: 请先连接设备');
@@ -190,10 +221,16 @@ ready(() => {
         }
     });
 
-    // 第六步：保留你源码的烧录逻辑（适配新UI）
+    // 第七步：保留你源码的烧录逻辑（模式适配）
     flash.addEventListener('click', async () => {
         const entries = fileList.querySelectorAll('.file-entry');
         const fileArray = [];
+
+        // 模式校验：快捷模式需选择设备
+        if (currentMode === 'quick' && !selectedDevice) {
+            terminal.writeLine('Error: 快捷模式请先选择设备型号');
+            return;
+        }
 
         // 保留你的文件验证逻辑
         for (const entry of entries) {
@@ -249,7 +286,7 @@ ready(() => {
         try {
             flash.disabled = true;
             flash.textContent = '⚡ 正在烧录...';
-            terminal.writeLine('Info: 开始烧录...');
+            terminal.writeLine(`Info: ${currentMode === 'quick' ? '快捷模式' : '自定义模式'}开始烧录...`);
             await loader.write_flash(flashOptions);
             await loader.hard_reset();
             terminal.writeLine('Success: 烧录完成！设备已重启');
@@ -264,6 +301,9 @@ ready(() => {
         }
     });
 
+    // 初始化：默认快捷模式
+    switchMode('quick');
     // 初始化日志
-    terminal.writeLine('Info: 欢迎使用WebESP固件烧录工具，操作步骤：1.选设备 → 2.连端口 → 3.添加文件 → 4.烧录');
+    terminal.writeLine('Info: 欢迎使用WebESP固件烧录工具');
+    terminal.writeLine('Info: 快捷模式→选设备+0x0地址烧录 | 自定义模式→自由选固件/地址');
 });

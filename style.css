@@ -58,6 +58,26 @@ body {
     height: 100%;
 }
 
+/* 模式切换样式（新增） */
+.mode-switch {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.mode-label {
+    display: block;
+    margin: 0.8rem 0;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.mode-label input {
+    margin-right: 0.5rem;
+    accent-color: var(--primary);
+}
+
 /* 步骤标题 */
 .form-step {
     margin-bottom: 2rem;
@@ -320,6 +340,36 @@ progress-bar[value] {
     white-space: pre-wrap;
     overflow-y: auto;
     line-height: 1.5;
+}
+
+/* 模式显隐控制（核心） */
+.quick-mode-only {
+    display: block;
+}
+
+.custom-mode-only {
+    display: none;
+}
+
+/* 自定义模式下的样式覆盖 */
+body.custom-mode .quick-mode-only {
+    display: none;
+}
+
+body.custom-mode .custom-mode-only {
+    display: block;
+}
+
+body.custom-mode .address-input {
+    readonly: false;
+    pointer-events: auto;
+    background-color: white;
+}
+
+body.quick-mode .address-input {
+    readonly: true;
+    pointer-events: none;
+    background-color: #f1f5f9;
 }
 
 /* 通用隐藏类 */

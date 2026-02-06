@@ -25,22 +25,3 @@ export const deviceList = [
         img: "images/device-d.png"
     }
 ];
-
-// 固件地址映射（自动填充对应设备的固件地址）
-export const firmwareAddressMap = {
-    "DEVICE_A": {
-        main: "0x000000",       // 主固件地址
-        partition: "0x080000"   // 分区表地址
-    },
-    "DEVICE_B": {
-        main: "0x000000",
-        partition: "0x080000"
-    },
-    "DEVICE_C": {
-        main: "0x000000"        // ESP8266无分区表
-    },
-    "DEVICE_D": {
-        main: "0x000000",
-        partition: "0x080000"
-    }
-};
