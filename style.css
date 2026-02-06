@@ -1,21 +1,27 @@
-/* 全局基础样式 */
 :root {
     --primary: #3b82f6;
+    --primary-light: #60a5fa;
+    --primary-dark: #2563eb;
     --success: #10b981;
     --danger: #ef4444;
     --warning: #f97316;
     --bg: #f8fafc;
     --card-bg: #ffffff;
     --text: #1e293b;
+    --text-light: #64748b;
     --border: #e2e8f0;
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --mode-active-bg: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.05) 100%);
+    --mode-hover-bg: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(59, 130, 246, 0.02) 100%);
+    --mode-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.08);
+    --mode-active-shadow: 0 8px 16px -4px rgba(59, 130, 246, 0.15);
 }
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
 body {
@@ -36,6 +42,11 @@ body {
     color: var(--primary);
 }
 
+.logo h1 {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
 /* 左右分栏 */
 .main-layout {
     display: grid;
@@ -49,76 +60,97 @@ body {
     }
 }
 
-/* 通用卡片 */
-.card {
-    background: var(--card-bg);
-    border-radius: 0.8rem;
-    box-shadow: var(--shadow);
-    padding: 2rem;
-    height: 100%;
+/* 三个选择卡片 */
+.card-selection {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
 }
 
-/* 模式切换样式（新增） */
-.mode-switch {
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
+@media (min-width: 576px) {
+    .card-selection {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.selection-card {
+    padding: 1.2rem 1rem;
+    border: 2px solid var(--border);
+    border-radius: 0.8rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: transparent;
+}
+
+.selection-card:not(.active):hover {
+    border-color: var(--primary-light);
+    background: var(--mode-hover-bg);
+    transform: translateY(-3px);
+    box-shadow: var(--mode-shadow);
+}
+
+.selection-card.active {
+    border-color: var(--primary);
+    background: var(--mode-active-bg);
+    box-shadow: var(--mode-active-shadow);
+    transform: translateY(-5px);
+}
+
+.card-icon {
+    font-size: 1.8rem;
+    margin-bottom: 0.6rem;
+    color: var(--primary-dark);
+    transition: transform 0.3s ease;
+}
+
+.selection-card.active .card-icon {
+    color: var(--primary);
+    transform: scale(1.1);
+}
+
+.card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+    color: var(--text);
+}
+
+.selection-card.active .card-title {
+    color: var(--primary-dark);
+}
+
+.card-desc {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    line-height: 1.3;
+}
+
+/* 功能区卡片 */
+.function-card {
+    display: none;
+    padding: 1.5rem;
+    border-radius: 0.8rem;
+    background-color: var(--card-bg);
+    box-shadow: var(--shadow);
+    margin-bottom: 1.5rem;
+}
+
+.function-card.active {
+    display: block;
+}
+
+.function-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1.2rem;
+    color: var(--primary);
+    padding-bottom: 0.6rem;
     border-bottom: 1px solid var(--border);
 }
 
-.mode-label {
-    display: block;
-    margin: 0.8rem 0;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-.mode-label input {
-    margin-right: 0.5rem;
-    accent-color: var(--primary);
-}
-
-/* 步骤标题 */
-.form-step {
-    margin-bottom: 2rem;
-}
-
-.step-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: var(--primary);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.step-title::before {
-    content: '';
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background-color: var(--primary);
-    color: white;
-    text-align: center;
-    font-size: 0.9rem;
-    line-height: 20px;
-}
-
-.step1::before {
-    content: '1';
-}
-
-.step2::before {
-    content: '2';
-}
-
-.step3::before {
-    content: '3';
-}
-
-/* 设备图片卡片 */
+/* 设备卡片 */
 .device-cards {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -128,21 +160,26 @@ body {
 
 .device-card {
     border: 2px solid var(--border);
-    border-radius: 0.6rem;
+    border-radius: 0.8rem;
     padding: 1rem 0.5rem;
     text-align: center;
     cursor: pointer;
     transition: all 0.2s ease;
+    background-color: transparent;
 }
 
 .device-card:hover {
     border-color: var(--primary-light);
-    background-color: rgba(59, 130, 246, 0.05);
+    background-color: rgba(59, 130, 246, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.05);
 }
 
 .device-card.active {
     border-color: var(--primary);
-    background-color: rgba(59, 130, 246, 0.1);
+    background-color: rgba(59, 130, 246, 0.12);
+    box-shadow: 0 6px 12px -3px rgba(59, 130, 246, 0.1);
+    transform: translateY(-3px);
 }
 
 .device-card img {
@@ -157,17 +194,6 @@ body {
     font-weight: 500;
 }
 
-/* 芯片信息 */
-#chip-info {
-    font-size: 0.85rem;
-    margin-bottom: 0.5rem;
-    color: var(--text);
-}
-
-.mt-1 {
-    margin-top: 1rem;
-}
-
 /* 表单控件 */
 .form-control,
 .address-input,
@@ -177,7 +203,14 @@ body {
     border: 1px solid var(--border);
     border-radius: 0.6rem;
     font-size: 1rem;
-    margin-bottom: 0.8rem;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus,
+.address-input:focus,
+.file-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .file-entry {
@@ -205,6 +238,12 @@ body {
     color: white;
     border: none;
     cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.file-entry .remove-file:hover {
+    background-color: #dc2626;
+    transform: scale(1.05);
 }
 
 .add-file-btn {
@@ -215,26 +254,38 @@ body {
     background-color: transparent;
     color: var(--primary);
     cursor: pointer;
-    margin-bottom: 1rem;
+    transition: all 0.2s ease;
 }
 
-/* 烧录选项 */
-.flash-options {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1rem;
+.add-file-btn:hover {
+    background-color: rgba(59, 130, 246, 0.05);
+    border-color: var(--primary-light);
 }
 
-.flash-options label {
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+label.mt-1 {
+    margin-top: 1rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+}
+
+input[type="checkbox"] {
+    accent-color: var(--primary);
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
 }
 
 /* 按钮样式 */
 button {
-    padding: 0.9rem;
+    padding: 0.9rem 1rem;
     border: none;
     border-radius: 0.6rem;
     font-size: 1rem;
@@ -242,54 +293,63 @@ button {
     color: white;
     cursor: pointer;
     transition: all 0.2s ease;
-}
-
-.port-btn,
-.erase-btn {
-    width: 100%;
-    margin-bottom: 0.8rem;
-}
-
-.port-btn {
-    background-color: var(--primary);
-}
-
-.erase-btn {
-    background-color: var(--warning);
-    width: 48%;
-}
-
-.btn-burn {
-    background-color: var(--success);
-    width: 48%;
-}
-
-.flash-buttons {
     display: flex;
+    align-items: center;
+    justify-content: center;
     gap: 0.5rem;
+    min-height: 48px;
+}
+
+button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.1);
 }
 
 button:disabled {
     background-color: #f1f5f9;
     color: #94a3b8;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
-/* 进度条 */
-progress-bar {
-    display: block;
-    width: 100%;
-    height: 1rem;
-    border-radius: 0.5rem;
-    background-color: var(--border);
-    overflow: hidden;
-}
-
-progress-bar[value] {
-    display: block;
-    height: 100%;
+.port-btn {
     background-color: var(--primary);
-    transition: width 0.2s ease;
+    width: 100%;
+}
+
+.port-btn:hover:not(:disabled) {
+    background-color: var(--primary-light);
+}
+
+.erase-btn {
+    background-color: var(--warning);
+    width: 100%;
+}
+
+.erase-btn:hover:not(:disabled) {
+    background-color: #ea580c;
+}
+
+.btn-burn {
+    background-color: var(--success);
+    width: 100%;
+}
+
+.btn-burn:hover:not(:disabled) {
+    background-color: #059669;
+}
+
+.w-100 {
+    width: 100%;
+}
+
+.mt-1 {
+    margin-top: 1rem;
+}
+
+.mt-2 {
+    margin-top: 1.5rem;
 }
 
 /* 状态条 */
@@ -311,19 +371,53 @@ progress-bar[value] {
     }
 }
 
-#board,
-#status {
+#quick-board,
+#quick-status,
+#custom-status,
+#erase-status {
     font-weight: 500;
 }
 
-#status {
+#quick-status.success,
+#custom-status.success,
+#erase-status.success {
+    color: var(--success);
+}
+
+#quick-status.danger,
+#custom-status.danger,
+#erase-status.danger {
     color: var(--danger);
+}
+
+#quick-status.primary,
+#custom-status.primary,
+#erase-status.primary {
+    color: var(--primary);
+}
+
+/* 进度条 */
+progress-bar {
+    display: block;
+    width: 100%;
+    height: 1rem;
+    border-radius: 0.5rem;
+    background-color: var(--border);
+    overflow: hidden;
+}
+
+progress-bar[value] {
+    display: block;
+    height: 100%;
+    background-color: var(--primary);
+    transition: width 0.2s ease;
 }
 
 /* 日志区 */
 .log-card {
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 
 #output {
@@ -340,39 +434,10 @@ progress-bar[value] {
     white-space: pre-wrap;
     overflow-y: auto;
     line-height: 1.5;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-/* 模式显隐控制（核心） */
-.quick-mode-only {
-    display: block;
-}
-
-.custom-mode-only {
-    display: none;
-}
-
-/* 自定义模式下的样式覆盖 */
-body.custom-mode .quick-mode-only {
-    display: none;
-}
-
-body.custom-mode .custom-mode-only {
-    display: block;
-}
-
-body.custom-mode .address-input {
-    readonly: false;
-    pointer-events: auto;
-    background-color: white;
-}
-
-body.quick-mode .address-input {
-    readonly: true;
-    pointer-events: none;
-    background-color: #f1f5f9;
-}
-
-/* 通用隐藏类 */
+/* 通用类 */
 .hidden {
     display: none;
 }
