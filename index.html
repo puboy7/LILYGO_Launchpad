@@ -14,18 +14,31 @@
 
     <!-- 左右分栏布局 -->
     <div class="main-layout">
-      <!-- 左侧：操作区（保留你源码的所有功能+图片卡片） -->
+      <!-- 左侧：操作区（新增模式切换） -->
       <div class="left-panel">
         <div class="card">
-          <!-- 步骤1：图片卡片选设备 -->
-          <div class="form-step step1">
+          <!-- 新增：烧录模式切换 -->
+          <div class="mode-switch">
+            <div class="step-title">选择烧录模式</div>
+            <label class="mode-label">
+              <input type="radio" name="burn-mode" value="quick" checked> 
+              <span>快捷烧录（选设备，默认0x0地址）</span>
+            </label>
+            <label class="mode-label">
+              <input type="radio" name="burn-mode" value="custom"> 
+              <span>自定义烧录（自由选固件/地址）</span>
+            </label>
+          </div>
+
+          <!-- 步骤1：快捷模式-图片卡片选设备（自定义模式隐藏） -->
+          <div class="form-step step1 quick-mode-only">
             <div class="step-title">选择设备型号</div>
-            <label>点击设备图片选择（自动匹配对应固件）</label>
+            <label>点击设备图片选择（自动匹配0x0地址）</label>
             <div class="device-cards" id="device-cards"></div>
             <div id="chip-info" class="hidden">关联芯片：<span id="chip-name">未知</span></div>
           </div>
 
-          <!-- 步骤2：保留你源码的核心功能区 -->
+          <!-- 步骤2：通用-连接设备 -->
           <div class="form-step step2">
             <div class="step-title">连接设备</div>
             <label for="baudrate">波特率</label>
@@ -42,18 +55,19 @@
             </div>
           </div>
 
-          <!-- 步骤3：保留你源码的文件管理+烧录功能 -->
+          <!-- 步骤3：烧录配置（模式适配） -->
           <div class="form-step step3">
             <div class="step-title">固件烧录</div>
             <!-- 文件列表 -->
             <div id="file-list" class="file-list">
               <div class="file-entry">
-                <input type="text" class="address-input" value="0x000000" placeholder="Flash地址">
+                <input type="text" class="address-input" value="0x000000" placeholder="Flash地址" readonly>
                 <input type="file" class="file-input">
                 <button class="remove-file">-</button>
               </div>
             </div>
-            <button id="add-file" class="add-file-btn">+ 添加固件文件</button>
+            <!-- 添加文件按钮（仅自定义模式显示） -->
+            <button id="add-file" class="add-file-btn custom-mode-only">+ 添加固件文件</button>
             
             <!-- 烧录选项 -->
             <div class="flash-options mt-1">
@@ -77,7 +91,7 @@
         </div>
       </div>
 
-      <!-- 右侧：日志区（保留你源码的彩色日志） -->
+      <!-- 右侧：日志区 -->
       <div class="right-panel">
         <div class="card log-card">
           <div class="step-title">烧录日志</div>
@@ -87,8 +101,8 @@
     </div>
   </div>
 
+  <!-- 保留依赖引入顺序 -->
   <script type="module" src="app.js"></script>
   <script type="module" src="firmware-library.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
 </body>
 </html>
