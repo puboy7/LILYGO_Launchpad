@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title id="page-title">WebESP 固件一键烧录工具</title>
   <link rel="stylesheet" href="style.css">
-  <!-- 引入CryptoJS（用于MD5校验） -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
 </head>
 
@@ -14,15 +13,11 @@
   <div class="container">
     <div class="logo">
       <h1 id="logo-title">WebESP 固件一键烧录工具</h1>
-      <!-- 新增：中英文切换按钮 -->
       <button id="lang-switch" class="lang-switch-btn">English</button>
     </div>
 
-    <!-- 左右分栏布局 -->
     <div class="main-layout">
-      <!-- 左侧：操作区 -->
       <div class="left-panel">
-        <!-- 三个选择卡片 -->
         <div class="card-selection">
           <div class="selection-card active" data-type="quick">
             <div class="card-icon">⚡</div>
@@ -41,48 +36,51 @@
           </div>
         </div>
 
-        <!-- 功能区1：快捷烧录 -->
         <div class="function-card active" id="quick-card">
           <div class="function-title" data-i18n="quickConfigTitle">快捷烧录配置</div>
           <label data-i18n="selectDeviceLabel">点击设备图片选择</label>
           <div class="device-cards" id="device-cards"></div>
-          <div id="chip-info" class="hidden mt-1">关联芯片：<span id="chip-name">未知</span></div>
+          <div id="chip-info" class="hidden mt-1">Chip: <span id="chip-name">Unknown</span></div>
 
           <div class="mt-2">
-            <!-- 隐藏波特率选择框 -->
-            <select id="quick-baudrate" class="form-control" style="display: none;">
+            <select id="quick-baudrate" style="display:none;">
               <option value="115200" selected>115200</option>
             </select>
             <button id="quick-connect" class="port-btn mt-1" data-i18n="connectPortBtn">🔌 连接设备端口</button>
-            <div class="status-bar mt-1">
-              <span data-i18n="deviceStatusLabel">设备状态：</span><span id="quick-board">未连接</span>
-              <span data-i18n="portStatusLabel">端口状态：</span><span id="quick-status">未连接</span>
+            <!-- 单行状态：端口连接状态（红绿点） -->
+            <div class="status-row mt-1">
+              <span>
+                <span class="status-dot disconnected" id="port-dot"></span>
+                <span id="port-text">未连接</span>
+              </span>
+              <span id="device-label">未选择设备</span>
             </div>
           </div>
 
           <div class="mt-2">
             <label data-i18n="selectFirmwareLabel">选择固件文件（地址固定0x0）</label>
             <div class="file-entry">
-              <input type="text" class="address-input" value="0x000000" placeholder="Flash地址" readonly>
+              <input type="text" class="address-input" value="0x000000" readonly>
               <input type="file" class="file-input" id="quick-file">
             </div>
           </div>
 
           <button id="quick-flash" class="btn-burn mt-2 w-100" data-i18n="burnBtn">⚡ 一键烧录固件</button>
-          <progress-bar id="quick-progress" value="0" max="100" class="mt-1"></progress-bar>
+          <progress id="quick-progress" value="0" max="100" class="mt-1"></progress>
         </div>
 
-        <!-- 功能区2：自定义烧录 -->
         <div class="function-card" id="custom-card">
           <div class="function-title" data-i18n="customConfigTitle">自定义烧录配置</div>
           <div>
-            <!-- 隐藏波特率选择框 -->
-            <select id="custom-baudrate" class="form-control" style="display: none;">
+            <select id="custom-baudrate" style="display:none;">
               <option value="115200" selected>115200</option>
             </select>
             <button id="custom-connect" class="port-btn mt-1" data-i18n="connectPortBtn">🔌 连接设备端口</button>
-            <div class="status-bar mt-1">
-              <span data-i18n="portStatusLabel">端口状态：</span><span id="custom-status">未连接</span>
+            <div class="status-row mt-1">
+              <span>
+                <span class="status-dot disconnected" id="c-port-dot"></span>
+                <span id="c-port-text">未连接</span>
+              </span>
             </div>
           </div>
 
@@ -90,7 +88,7 @@
             <label data-i18n="firmwareListLabel">固件文件列表（自定义地址）</label>
             <div id="custom-file-list" class="file-list">
               <div class="file-entry">
-                <input type="text" class="address-input" value="0x000000" placeholder="Flash地址">
+                <input type="text" class="address-input" value="0x000000">
                 <input type="file" class="file-input">
                 <button class="remove-file">-</button>
               </div>
@@ -99,25 +97,25 @@
           </div>
 
           <button id="custom-flash" class="btn-burn mt-2 w-100" data-i18n="burnBtn">⚡ 一键烧录固件</button>
-          <progress-bar id="custom-progress" value="0" max="100" class="mt-1"></progress-bar>
+          <progress id="custom-progress" value="0" max="100" class="mt-1"></progress>
         </div>
 
-        <!-- 功能区3：擦除Flash -->
         <div class="function-card" id="erase-card">
           <div class="function-title" data-i18n="eraseConfigTitle">擦除Flash配置</div>
-          <!-- 隐藏波特率选择框 -->
-          <select id="erase-baudrate" class="form-control" style="display: none;">
+          <select id="erase-baudrate" style="display:none;">
             <option value="115200" selected>115200</option>
           </select>
           <button id="erase-connect" class="port-btn mt-1" data-i18n="connectSerialBtn">🔌 连接串口</button>
-          <div class="status-bar mt-1">
-            <span data-i18n="portStatusLabel">端口状态：</span><span id="erase-status">未连接</span>
+          <div class="status-row mt-1">
+            <span>
+              <span class="status-dot disconnected" id="e-port-dot"></span>
+              <span id="e-port-text">未连接</span>
+            </span>
           </div>
           <button id="erase-flash" class="erase-btn mt-2 w-100" data-i18n="eraseBtn">🗑️ 执行擦除Flash</button>
         </div>
       </div>
 
-      <!-- 右侧：日志区 -->
       <div class="right-panel">
         <div class="card log-card">
           <div class="function-title" data-i18n="logTitle">操作日志</div>
@@ -127,7 +125,6 @@
     </div>
   </div>
 
-  <!-- 依赖引入（新增i18n.js） -->
   <script src="esptool.min.js"></script>
   <script type="module" src="i18n.js"></script>
   <script type="module" src="firmware-library.js"></script>
