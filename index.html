@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title id="page-title">WebESP 固件一键烧录工具</title>
   <link rel="stylesheet" href="style.css">
+  <!-- MD5加密库，烧录必备 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
 </head>
+
 <body>
   <div class="container">
     <div class="logo">
@@ -16,11 +19,12 @@
 
     <div class="main-layout">
       <div class="left-panel">
+        <!-- 功能卡片切换 -->
         <div class="card-selection">
           <div class="selection-card active" data-type="quick">
             <div class="card-icon">⚡</div>
             <div class="card-title" data-i18n="quickCardTitle">快捷烧录</div>
-            <div class="card-desc" data-i18n="quickCardDesc">选设备 → 一键连接烧录</div>
+            <div class="card-desc" data-i18n="quickCardDesc">选设备 → 连端口 → 烧固件</div>
           </div>
           <div class="selection-card" data-type="custom">
             <div class="card-icon">🔧</div>
@@ -34,7 +38,7 @@
           </div>
         </div>
 
-        <!-- 快捷烧录（简化：隐藏文件选择框，保留地址自定义） -->
+        <!-- 快捷烧录（核心：自动绑固件+先连后烧） -->
         <div class="function-card active" id="quick-card">
           <div class="function-title" data-i18n="quickConfigTitle">快捷烧录配置</div>
           <label data-i18n="selectDeviceLabel">点击设备图片选择</label>
@@ -44,11 +48,13 @@
             <select id="quick-baudrate" style="display:none;">
               <option value="115200" selected>115200</option>
             </select>
-            <!-- 地址自定义框（保留） -->
-            <label data-i18n="firmwareAddrLabel">固件烧录地址（默认自动匹配设备）</label>
+            <!-- 烧录地址输入框（选设备自动填充，可手动修改） -->
+            <label data-i18n="firmwareAddrLabel">固件烧录地址</label>
             <input type="text" class="address-input mt-1" id="quick-addr" value="0x000000" placeholder="0x000000">
-            <!-- 连接+烧录一键按钮 -->
-            <button id="quick-connect" class="port-btn mt-1" data-i18n="connectBurnBtn">🔌 连接并自动烧录</button>
+            <!-- 连接端口按钮（仅连串口） -->
+            <button id="quick-connect" class="port-btn mt-1" data-i18n="connectPortBtn">🔌 连接设备端口</button>
+            <!-- 烧录固件按钮（连接成功后点击） -->
+            <button id="quick-flash" class="btn-burn mt-1 w-100" data-i18n="burnBtn">⚡ 烧录固件</button>
             <!-- 单行红绿圆点状态 -->
             <div class="status-row mt-1">
               <span>
@@ -59,13 +65,13 @@
             </div>
           </div>
 
-          <!-- 隐藏文件选择框（自动加载固件，无需手动选） -->
-          <input type="file" id="quick-file" style="display: none;">
-          <button id="quick-flash" class="btn-burn mt-2 w-100" data-i18n="burnBtn" style="display: none;">⚡ 一键烧录固件</button>
+          <!-- 烧录进度条 -->
           <progress id="quick-progress" value="0" max="100" class="mt-1"></progress>
+          <!-- 隐藏文件选择框（自动加载固件，无需手动操作） -->
+          <input type="file" id="quick-file" style="display: none;">
         </div>
 
-        <!-- 自定义烧录（保留不变） -->
+        <!-- 自定义烧录（保留原有功能，无修改） -->
         <div class="function-card" id="custom-card">
           <div class="function-title" data-i18n="customConfigTitle">自定义烧录配置</div>
           <div>
@@ -97,7 +103,7 @@
           <progress id="custom-progress" value="0" max="100" class="mt-1"></progress>
         </div>
 
-        <!-- 擦除Flash（保留不变） -->
+        <!-- 擦除Flash（保留原有功能，无修改） -->
         <div class="function-card" id="erase-card">
           <div class="function-title" data-i18n="eraseConfigTitle">擦除Flash配置</div>
           <select id="erase-baudrate" style="display:none;">
@@ -124,9 +130,11 @@
     </div>
   </div>
 
+  <!-- 引入核心库和自定义脚本 -->
   <script src="esptool.min.js"></script>
   <script type="module" src="i18n.js"></script>
   <script type="module" src="firmware-library.js"></script>
   <script type="module" src="app.js"></script>
 </body>
+
 </html>

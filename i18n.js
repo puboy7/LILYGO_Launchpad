@@ -1,50 +1,64 @@
+// 双语配置：key-统一标识，value-中/英文文本
 export const i18n = {
+    // 页面标题
     title: { zh: "WebESP 固件一键烧录工具", en: "WebESP Firmware One-Click Burner" },
+    // 功能选择卡片
     quickCardTitle: { zh: "快捷烧录", en: "Quick Burn" },
-    quickCardDesc: { zh: "选设备 → 一键连接烧录", en: "Select Device → Connect & Burn" },
+    quickCardDesc: { zh: "选设备 → 连端口 → 烧固件", en: "Select → Connect → Burn" },
     customCardTitle: { zh: "自定义烧录", en: "Custom Burn" },
     customCardDesc: { zh: "自由选固件 → 自定义地址", en: "Custom Firmware + Address" },
     eraseCardTitle: { zh: "擦除Flash", en: "Erase Flash" },
     eraseCardDesc: { zh: "仅擦除设备Flash → 无需固件", en: "Erase Only, No Firmware" },
+    // 功能区标题
     quickConfigTitle: { zh: "快捷烧录配置", en: "Quick Burn Config" },
     customConfigTitle: { zh: "自定义烧录配置", en: "Custom Burn Config" },
     eraseConfigTitle: { zh: "擦除Flash配置", en: "Erase Flash Config" },
+    // 标签文字
     selectDeviceLabel: { zh: "点击设备图片选择", en: "Click Device to Select" },
-    firmwareAddrLabel: { zh: "固件烧录地址（默认自动匹配设备）", en: "Firmware Address (Auto Match Device)" },
+    firmwareAddrLabel: { zh: "固件烧录地址", en: "Firmware Burn Address" },
     firmwareListLabel: { zh: "固件文件列表（自定义地址）", en: "Firmware List (Custom Address)" },
     logTitle: { zh: "操作日志", en: "Operation Log" },
-    connectBurnBtn: { zh: "🔌 连接并自动烧录", en: "🔌 Connect & Auto Burn" },
-    connectPortBtn: { zh: "🔌 连接设备端口", en: "🔌 Connect Port" },
-    connectSerialBtn: { zh: "🔌 连接串口", en: "🔌 Connect Serial" },
-    addFileBtn: { zh: "+ 添加固件文件", en: "+ Add File" },
-    burnBtn: { zh: "⚡ 一键烧录固件", en: "⚡ Burn Firmware" },
+    // 按钮文字
+    connectPortBtn: { zh: "🔌 连接设备端口", en: "🔌 Connect Device Port" },
+    connectSerialBtn: { zh: "🔌 连接串口", en: "🔌 Connect Serial Port" },
+    addFileBtn: { zh: "+ 添加固件文件", en: "+ Add Firmware File" },
+    burnBtn: { zh: "⚡ 烧录固件", en: "⚡ Burn Firmware" },
     eraseBtn: { zh: "🗑️ 执行擦除Flash", en: "🗑️ Erase Flash" },
     switchLangBtn: { zh: "English", en: "中文" },
+    // 状态文字
     disconnectedText: { zh: "未连接", en: "Disconnected" },
     connectedText: { zh: "已连接", en: "Connected" },
     noDeviceText: { zh: "未选择设备", en: "No Device Selected" },
-    activateFunction: { zh: "已激活【{type}】功能", en: "Activated [{type}] function" },
-    selectDeviceSuccess: { zh: "选中设备{device}，自动绑定固件：{firmware}，默认地址：{addr}", en: "Selected {device}, auto bind firmware: {firmware}, default address: {addr}" },
-    connectBurnStart: { zh: "开始连接端口并自动烧录...", en: "Start connecting port and auto burning..." },
-    connectSuccess: { zh: "端口连接成功，开始烧录固件...", en: "Port connected, start burning firmware..." },
-    connectFail: { zh: "端口连接失败 - {msg}", en: "Port connect failed - {msg}" },
-    burnStart: { zh: "烧录固件：{file}（地址：{addr}），自动擦除+压缩", en: "Burning firmware: {file} (Address: {addr}), Auto Erase + Compress" },
-    burnSuccess: { zh: "烧录完成！设备已重启", en: "Burn completed! Device restarted" },
-    burnFail: { zh: "烧录失败 - {msg}", en: "Burn failed - {msg}" },
-    firmwareLoadFail: { zh: "加载固件{firmware}失败：{msg}，请检查文件路径", en: "Load firmware {firmware} failed: {msg}, check file path" },
-    addressFormatError: { zh: "地址格式错误：{addr}（需0x开头十六进制）", en: "Invalid address: {addr} (Hex start with 0x required)" },
-    noDeviceError: { zh: "请先选择设备", en: "Please select device first" },
-    initLog1: { zh: "欢迎使用WebESP一键烧录工具", en: "Welcome to WebESP One-Click Burner" },
-    initLog2: { zh: "快捷烧录：选设备 → 点击连接 → 自动烧录", en: "Quick Burn: Select Device → Click Connect → Auto Burn" },
-    initLog3: { zh: "默认配置：波特率115200 | 自动擦除 | 压缩烧录", en: "Default: Baudrate 115200 | Auto Erase | Compressed Burn" }
+    // 日志提示
+    activateFunction: { zh: "已激活【{type}】功能", en: "Activated [{type}] Function" },
+    selectDeviceSuccess: { zh: "选中设备{device}，自动绑定固件：{firmware}，默认地址：{addr}", en: "Selected {device}, Auto bind firmware: {firmware}, Default address: {addr}" },
+    firmwareLoadFail: { zh: "加载固件{firmware}失败：{msg}", en: "Load firmware {firmware} failed: {msg}" },
+    connectSuccess: { zh: "设备端口连接成功", en: "Device port connected successfully" },
+    connectFail: { zh: "设备端口连接失败 - {msg}", en: "Device port connect failed - {msg}" },
+    burnStart: { zh: "开始烧录固件：{file}（地址：{addr}），自动擦除+压缩烧录", en: "Start burning firmware: {file} (Address: {addr}), Auto Erase + Compress" },
+    burnSuccess: { zh: "固件烧录完成！设备已自动重启", en: "Firmware burned successfully! Device restarted automatically" },
+    burnFail: { zh: "固件烧录失败 - {msg}", en: "Firmware burn failed - {msg}" },
+    eraseStart: { zh: "开始擦除Flash...（请勿断开设备）", en: "Start erasing Flash... (Do not disconnect)" },
+    eraseSuccess: { zh: "Flash擦除完成！", en: "Flash erase completed!" },
+    eraseFail: { zh: "Flash擦除失败 - {msg}", en: "Flash erase failed - {msg}" },
+    noDeviceError: { zh: "请先选择设备型号", en: "Please select a device model first" },
+    noConnectionError: { zh: "设备端口未连接，请先点击【连接设备端口】", en: "Device port not connected, please click [Connect Device Port] first" },
+    addressFormatError: { zh: "地址格式错误：{addr}（需以0x开头的十六进制数）", en: "Invalid address format: {addr} (Must be hex starting with 0x)" },
+    noFileError: { zh: "请选择固件文件", en: "Please select firmware file" },
+    allFileError: { zh: "请选择所有固件文件", en: "Please select all firmware files" },
+    initLog1: { zh: "欢迎使用WebESP固件一键烧录工具", en: "Welcome to WebESP Firmware One-Click Burner" },
+    initLog2: { zh: "快捷烧录流程：选设备 → 连接端口 → 点击烧录", en: "Quick Burn Process: Select Device → Connect Port → Click Burn" },
+    initLog3: { zh: "默认配置：波特率115200 | 自动擦除Flash | 压缩烧录", en: "Default Config: Baudrate 115200 | Auto Erase Flash | Compressed Burn" }
 };
 
+// 功能类型名称映射（用于日志）
 export const typeNameMap = {
     quick: { zh: "快捷烧录", en: "Quick Burn" },
     custom: { zh: "自定义烧录", en: "Custom Burn" },
     erase: { zh: "擦除Flash", en: "Erase Flash" }
 };
 
+// 模式名称映射（用于日志）
 export const modeNameMap = {
     quick: { zh: "快捷", en: "Quick" },
     custom: { zh: "自定义", en: "Custom" },
