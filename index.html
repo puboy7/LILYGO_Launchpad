@@ -14,20 +14,26 @@
 
     <!-- 左右分栏布局 -->
     <div class="main-layout">
-      <!-- 左侧：操作区（新增模式切换） -->
+      <!-- 左侧：操作区（核心修改：模式选择卡片） -->
       <div class="left-panel">
         <div class="card">
-          <!-- 新增：烧录模式切换 -->
-          <div class="mode-switch">
-            <div class="step-title">选择烧录模式</div>
-            <label class="mode-label">
-              <input type="radio" name="burn-mode" value="quick" checked> 
-              <span>快捷烧录（选设备，默认0x0地址）</span>
-            </label>
-            <label class="mode-label">
-              <input type="radio" name="burn-mode" value="custom"> 
-              <span>自定义烧录（自由选固件/地址）</span>
-            </label>
+          <!-- 核心修改：烧录模式选择卡片 -->
+          <div class="step-title">选择烧录模式</div>
+          <div class="mode-cards">
+            <!-- 快捷烧录卡片（默认选中） -->
+            <div class="mode-card active" data-mode="quick">
+              <div class="mode-icon">⚡</div>
+              <div class="mode-title">快捷烧录</div>
+              <div class="mode-desc">选设备 → 0x0地址 → 一键烧录</div>
+              <input type="radio" name="burn-mode" value="quick" checked hidden>
+            </div>
+            <!-- 自定义烧录卡片 -->
+            <div class="mode-card" data-mode="custom">
+              <div class="mode-icon">🔧</div>
+              <div class="mode-title">自定义烧录</div>
+              <div class="mode-desc">自由选固件 → 自定义地址</div>
+              <input type="radio" name="burn-mode" value="custom" hidden>
+            </div>
           </div>
 
           <!-- 步骤1：快捷模式-图片卡片选设备（自定义模式隐藏） -->
