@@ -3,81 +3,105 @@ import { readAsBinaryString } from 'https://lsong.org/scripts/file.js';
 import { requestPort } from 'https://lsong.org/scripts/serialport.js';
 import { ESPLoader, Transport } from './esptool.min.js';
 import { deviceList } from './firmware-library.js';
+import { i18n, typeNameMap, modeNameMap } from './i18n.js';
 
 ready(() => {
-    // 日志输出
+    // ====================== 中英文切换核心逻辑 ======================
+    let currentLang = 'zh'; // 默认中文
+    const langSwitchBtn = document.getElementById('lang-switch');
     const output = document.getElementById('output');
+
+    // 切换语言
+    function switchLanguage(lang) {
+        currentLang = lang;
+        // 更新按钮文字
+        langSwitchBtn.textContent = i18n.switchLangBtn[lang];
+        // 更新页面标题
+        document.title = i18n.title[lang];
+        document.getElementById('logo-title').textContent = i18n.title[lang];
+        // 更新所有带data-i18n属性的元素
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (i18n[key]) el.textContent = i18n[key][lang];
+        });
+        // 清空日志并重新输出初始化日志
+        output.value = '';
+        terminal.writeLine(i18n.initLog1[lang]);
+        terminal.writeLine(i18n.initLog2[lang]);
+        terminal.writeLine(i18n.initLog3[lang]);
+    }
+
+    // 绑定切换按钮点击事件
+    langSwitchBtn.addEventListener('click', () => {
+        const newLang = currentLang === 'zh' ? 'en' : 'zh';
+        switchLanguage(newLang);
+    });
+
+    // 日志输出（支持双语）
     const terminal = {
         clean: () => output.value = '',
         write: data => output.value += data,
-        writeLine: data => {
-            let logText = data;
-            if (data.includes('Error:')) logText = `\x1b[31m${data}\x1b[0m`;
-            else if (data.includes('Success:')) logText = `\x1b[32m${data}\x1b[0m`;
-            else if (data.includes('Warning:')) logText = `\x1b[33m${data}\x1b[0m`;
+        writeLine: (key, params = {}) => {
+            let logText = i18n[key][currentLang];
+            // 替换日志中的占位符（如{type}、{device}等）
+            Object.keys(params).forEach(param => {
+                logText = logText.replace(`{${param}}`, params[param]);
+            });
+            // 保留颜色区分
+            if (key.includes('Error')) logText = `\x1b[31m${logText}\x1b[0m`;
+            else if (key.includes('Success')) logText = `\x1b[32m${logText}\x1b[0m`;
+            else if (key.includes('Info')) logText = `\x1b[34m${logText}\x1b[0m`;
             output.value += logText + '\n';
             output.scrollTop = output.scrollHeight;
         },
     };
 
-    // 全局变量
+    // ====================== 原有核心逻辑（整合双语） ======================
     let quickLoader = null;
     let customLoader = null;
     let eraseLoader = null;
     let selectedDevice = null;
     let currentType = 'quick';
+    const DEFAULT_BAUDRATE = 115200;
 
-    // ====================== 卡片切换逻辑 ======================
+    // 卡片切换逻辑
     const selectionCards = document.querySelectorAll('.selection-card');
     const functionCards = document.querySelectorAll('.function-card');
 
     function activateFunction(type) {
-        // 更新选择卡片
         selectionCards.forEach(card => {
             card.classList.toggle('active', card.dataset.type === type);
         });
-        // 更新功能区
         functionCards.forEach(card => {
             card.classList.toggle('active', card.id === `${type}-card`);
         });
-        // 记录当前类型
         currentType = type;
-        // 日志提示
-        const typeName = {
-            quick: '快捷烧录',
-            custom: '自定义烧录',
-            erase: '擦除Flash'
-        }[type];
-        terminal.writeLine(`Info: 已激活【${typeName}】功能`);
+        // 双语日志
+        terminal.writeLine('activateFunction', { type: typeNameMap[type][currentType] });
     }
 
-    // 绑定卡片点击
     selectionCards.forEach(card => {
         card.addEventListener('click', () => {
             const type = card.dataset.type;
-            if (type !== currentType) {
-                activateFunction(type);
-            }
+            if (type !== currentType) activateFunction(type);
         });
     });
 
-    // 初始化激活快捷烧录
+    // 初始化（默认中文）
+    switchLanguage('zh');
     activateFunction('quick');
 
     // ====================== 快捷烧录逻辑 ======================
-    const quickBaudrate = document.getElementById('quick-baudrate');
     const quickConnect = document.getElementById('quick-connect');
     const quickBoard = document.getElementById('quick-board');
     const quickStatus = document.getElementById('quick-status');
     const quickFile = document.getElementById('quick-file');
-    const quickEraseAll = document.getElementById('quick-erase-all');
     const quickFlash = document.getElementById('quick-flash');
     const quickProgress = document.getElementById('quick-progress');
     const deviceCards = document.getElementById('device-cards');
     const chipInfo = document.getElementById('chip-info');
     const chipName = document.getElementById('chip-name');
 
-    // 初始化设备卡片
     deviceList.forEach(device => {
         const card = document.createElement('div');
         card.className = 'device-card';
@@ -88,19 +112,18 @@ ready(() => {
             selectedDevice = device;
             chipInfo.classList.remove('hidden');
             chipName.textContent = device.chip.replace('_', '-');
-            quickBoard.textContent = `已选择${device.label}(${device.chip.replace('_', '-')})`;
+            quickBoard.textContent = `${i18n.selectDeviceSuccess[currentLang].replace('{device}', device.label).replace('地址固定为0x000000', '')} (${device.chip.replace('_', '-')})`;
             quickBoard.style.color = 'var(--primary)';
-            terminal.writeLine(`Success: 选中设备${device.label}，地址固定为0x000000`);
+            terminal.writeLine('selectDeviceSuccess', { device: device.label });
         });
         deviceCards.appendChild(card);
     });
 
-    // 快捷连接
     quickConnect.addEventListener('click', async () => {
         try {
             quickConnect.disabled = true;
-            quickConnect.textContent = '🔌 正在连接...';
-            quickStatus.textContent = '连接中';
+            quickConnect.textContent = `${i18n.connectPortBtn[currentLang].split(' ')[0]} 正在连接...`;
+            quickStatus.textContent = i18n.connectSuccess[currentLang].includes('connected') ? 'Connecting' : '连接中';
             quickStatus.className = 'primary';
 
             const device = await requestPort();
@@ -110,92 +133,89 @@ ready(() => {
             quickStatus.className = 'success';
 
             quickLoader = new ESPLoader({
-                baudrate: +quickBaudrate.value,
+                baudrate: DEFAULT_BAUDRATE,
                 transport,
                 terminal
             });
             const chip = await quickLoader.main_fn();
-            quickBoard.textContent += ` - 已连接(${chip})`;
-            terminal.writeLine(`Success: 快捷模式连接设备成功 - ${chip}`);
+            quickBoard.textContent += ` - ${currentLang === 'zh' ? '已连接' : 'Connected'}(${chip})`;
+            terminal.writeLine('connectSuccess', { mode: modeNameMap.quick[currentLang], chip, baudrate: DEFAULT_BAUDRATE });
 
-            quickConnect.textContent = '🔌 已连接';
+            quickConnect.textContent = i18n.connectPortBtn[currentLang].replace('🔌 ', '') === '连接设备端口' ? '🔌 已连接' : '🔌 Connected';
             quickConnect.disabled = false;
         } catch (error) {
-            terminal.writeLine(`Error: 快捷模式连接失败 - ${error.message}`);
-            quickStatus.textContent = '连接失败';
+            terminal.writeLine('connectFail', { mode: modeNameMap.quick[currentLang], msg: error.message });
+            quickStatus.textContent = currentLang === 'zh' ? '连接失败' : 'Connection Failed';
             quickStatus.className = 'danger';
-            quickConnect.textContent = '🔌 连接设备端口';
+            quickConnect.textContent = i18n.connectPortBtn[currentLang];
             quickConnect.disabled = false;
         }
     });
 
-    // 快捷烧录（默认压缩）
     quickFlash.addEventListener('click', async () => {
         if (!selectedDevice) {
-            terminal.writeLine('Error: 请先选择设备型号');
+            terminal.writeLine('noDeviceError');
             return;
         }
         if (!quickLoader) {
-            terminal.writeLine('Error: 请先连接设备端口');
+            terminal.writeLine('noConnectionError');
             return;
         }
         if (!quickFile.files[0]) {
-            terminal.writeLine('Error: 请选择固件文件');
+            terminal.writeLine('noFileError');
             return;
         }
 
         try {
             quickFlash.disabled = true;
-            quickFlash.textContent = '⚡ 正在烧录...';
+            quickFlash.textContent = `${i18n.burnBtn[currentLang].split(' ')[0]} 正在烧录...`;
             quickProgress.value = 0;
 
             const file = quickFile.files[0];
             const data = await readAsBinaryString(file);
             const fileArray = [{ data, address: 0x000000 }];
-            terminal.writeLine(`Info: 开始烧录文件 - ${file.name} (地址: 0x000000)`);
+            terminal.writeLine('burnStart', { file: file.name, addr: '0x000000' });
 
             await quickLoader.write_flash({
                 fileArray,
                 flashSize: "keep",
-                eraseAll: quickEraseAll.checked,
-                compress: true, // 默认压缩烧录
+                eraseAll: true,
+                compress: true,
                 reportProgress: (_, written, total) => {
                     const progress = (written / total) * 100;
                     quickProgress.value = progress;
-                    terminal.writeLine(`Progress: 烧录中 ${progress.toFixed(2)}%`);
+                    const progressText = currentLang === 'zh' ? `烧录中 ${progress.toFixed(2)}%` : `Burning ${progress.toFixed(2)}%`;
+                    terminal.writeLine('Info', { type: progressText });
                 },
                 calculateMD5Hash: image => CryptoJS.MD5(CryptoJS.enc.Latin1.parse(image)).toString()
             });
 
             await quickLoader.hard_reset();
-            terminal.writeLine('Success: 快捷模式烧录完成！设备已重启');
+            terminal.writeLine('burnSuccess', { mode: modeNameMap.quick[currentLang] });
             quickProgress.value = 0;
-            quickFlash.textContent = '⚡ 一键烧录固件';
+            quickFlash.textContent = i18n.burnBtn[currentLang];
             quickFlash.disabled = false;
         } catch (error) {
-            terminal.writeLine(`Error: 快捷模式烧录失败 - ${error.message}`);
+            terminal.writeLine('burnFail', { mode: modeNameMap.quick[currentLang], msg: error.message });
             quickProgress.value = 0;
-            quickFlash.textContent = '⚡ 一键烧录固件';
+            quickFlash.textContent = i18n.burnBtn[currentLang];
             quickFlash.disabled = false;
         }
     });
 
     // ====================== 自定义烧录逻辑 ======================
-    const customBaudrate = document.getElementById('custom-baudrate');
     const customConnect = document.getElementById('custom-connect');
     const customStatus = document.getElementById('custom-status');
     const customFileList = document.getElementById('custom-file-list');
     const customAddFile = document.getElementById('custom-add-file');
-    const customEraseAll = document.getElementById('custom-erase-all');
     const customFlash = document.getElementById('custom-flash');
     const customProgress = document.getElementById('custom-progress');
 
-    // 添加文件项
     customAddFile.addEventListener('click', () => {
         const entry = document.createElement('div');
         entry.className = 'file-entry';
         entry.innerHTML = `
-      <input type="text" class="address-input" value="0x000000" placeholder="Flash地址">
+      <input type="text" class="address-input" value="0x000000" placeholder="${currentLang === 'zh' ? 'Flash地址' : 'Flash Address'}">
       <input type="file" class="file-input">
       <button class="remove-file">-</button>
     `;
@@ -205,12 +225,11 @@ ready(() => {
         customFileList.appendChild(entry);
     });
 
-    // 自定义连接
     customConnect.addEventListener('click', async () => {
         try {
             customConnect.disabled = true;
-            customConnect.textContent = '🔌 正在连接...';
-            customStatus.textContent = '连接中';
+            customConnect.textContent = `${i18n.connectPortBtn[currentLang].split(' ')[0]} 正在连接...`;
+            customStatus.textContent = currentLang === 'zh' ? '连接中' : 'Connecting';
             customStatus.className = 'primary';
 
             const device = await requestPort();
@@ -220,28 +239,27 @@ ready(() => {
             customStatus.className = 'success';
 
             customLoader = new ESPLoader({
-                baudrate: +customBaudrate.value,
+                baudrate: DEFAULT_BAUDRATE,
                 transport,
                 terminal
             });
             const chip = await customLoader.main_fn();
-            terminal.writeLine(`Success: 自定义模式连接设备成功 - ${chip}`);
+            terminal.writeLine('connectSuccess', { mode: modeNameMap.custom[currentLang], chip, baudrate: DEFAULT_BAUDRATE });
 
-            customConnect.textContent = '🔌 已连接';
+            customConnect.textContent = i18n.connectPortBtn[currentLang].replace('🔌 ', '') === '连接设备端口' ? '🔌 已连接' : '🔌 Connected';
             customConnect.disabled = false;
         } catch (error) {
-            terminal.writeLine(`Error: 自定义模式连接失败 - ${error.message}`);
-            customStatus.textContent = '连接失败';
+            terminal.writeLine('connectFail', { mode: modeNameMap.custom[currentLang], msg: error.message });
+            customStatus.textContent = currentLang === 'zh' ? '连接失败' : 'Connection Failed';
             customStatus.className = 'danger';
-            customConnect.textContent = '🔌 连接设备端口';
+            customConnect.textContent = i18n.connectPortBtn[currentLang];
             customConnect.disabled = false;
         }
     });
 
-    // 自定义烧录（默认压缩）
     customFlash.addEventListener('click', async () => {
         if (!customLoader) {
-            terminal.writeLine('Error: 请先连接设备端口');
+            terminal.writeLine('noConnectionError');
             return;
         }
 
@@ -251,11 +269,11 @@ ready(() => {
             const fileInput = entry.querySelector('.file-input');
             const addressInput = entry.querySelector('.address-input');
             if (!fileInput.files[0]) {
-                terminal.writeLine('Error: 请选择所有固件文件');
+                terminal.writeLine('allFileError');
                 return;
             }
             if (!/^0x[0-9A-Fa-f]+$/.test(addressInput.value)) {
-                terminal.writeLine(`Error: 地址格式错误 - ${addressInput.value}（需以0x开头的十六进制）`);
+                terminal.writeLine('addressFormatError', { addr: addressInput.value });
                 return;
             }
             const data = await readAsBinaryString(fileInput.files[0]);
@@ -263,52 +281,52 @@ ready(() => {
                 data,
                 address: parseInt(addressInput.value)
             });
-            terminal.writeLine(`Info: 已添加文件 - ${fileInput.files[0].name} (地址: ${addressInput.value})`);
+            terminal.writeLine('burnStart', { file: fileInput.files[0].name, addr: addressInput.value });
         }
 
         try {
             customFlash.disabled = true;
-            customFlash.textContent = '⚡ 正在烧录...';
+            customFlash.textContent = `${i18n.burnBtn[currentLang].split(' ')[0]} 正在烧录...`;
             customProgress.value = 0;
 
+            terminal.writeLine('customBurnStart');
             await customLoader.write_flash({
                 fileArray,
                 flashSize: "keep",
-                eraseAll: customEraseAll.checked,
-                compress: true, // 默认压缩烧录
+                eraseAll: true,
+                compress: true,
                 reportProgress: (_, written, total) => {
                     const progress = (written / total) * 100;
                     customProgress.value = progress;
-                    terminal.writeLine(`Progress: 烧录中 ${progress.toFixed(2)}%`);
+                    const progressText = currentLang === 'zh' ? `烧录中 ${progress.toFixed(2)}%` : `Burning ${progress.toFixed(2)}%`;
+                    terminal.writeLine('Info', { type: progressText });
                 },
                 calculateMD5Hash: image => CryptoJS.MD5(CryptoJS.enc.Latin1.parse(image)).toString()
             });
 
             await customLoader.hard_reset();
-            terminal.writeLine('Success: 自定义模式烧录完成！设备已重启');
+            terminal.writeLine('burnSuccess', { mode: modeNameMap.custom[currentLang] });
             customProgress.value = 0;
-            customFlash.textContent = '⚡ 一键烧录固件';
+            customFlash.textContent = i18n.burnBtn[currentLang];
             customFlash.disabled = false;
         } catch (error) {
-            terminal.writeLine(`Error: 自定义模式烧录失败 - ${error.message}`);
+            terminal.writeLine('burnFail', { mode: modeNameMap.custom[currentLang], msg: error.message });
             customProgress.value = 0;
-            customFlash.textContent = '⚡ 一键烧录固件';
+            customFlash.textContent = i18n.burnBtn[currentLang];
             customFlash.disabled = false;
         }
     });
 
     // ====================== 擦除Flash逻辑 ======================
-    const eraseBaudrate = document.getElementById('erase-baudrate');
     const eraseConnect = document.getElementById('erase-connect');
     const eraseStatus = document.getElementById('erase-status');
     const eraseFlash = document.getElementById('erase-flash');
 
-    // 擦除连接
     eraseConnect.addEventListener('click', async () => {
         try {
             eraseConnect.disabled = true;
-            eraseConnect.textContent = '🔌 正在连接...';
-            eraseStatus.textContent = '连接中';
+            eraseConnect.textContent = `${i18n.connectSerialBtn[currentLang].split(' ')[0]} 正在连接...`;
+            eraseStatus.textContent = currentLang === 'zh' ? '连接中' : 'Connecting';
             eraseStatus.className = 'primary';
 
             const device = await requestPort();
@@ -318,50 +336,44 @@ ready(() => {
             eraseStatus.className = 'success';
 
             eraseLoader = new ESPLoader({
-                baudrate: +eraseBaudrate.value,
+                baudrate: DEFAULT_BAUDRATE,
                 transport,
                 terminal
             });
             await eraseLoader.main_fn();
-            terminal.writeLine('Success: 擦除模式连接串口成功');
+            terminal.writeLine('connectSuccess', { mode: modeNameMap.erase[currentLang], chip: 'Serial Port', baudrate: DEFAULT_BAUDRATE });
 
-            eraseConnect.textContent = '🔌 已连接';
+            eraseConnect.textContent = i18n.connectSerialBtn[currentLang].replace('🔌 ', '') === '连接串口' ? '🔌 已连接' : '🔌 Connected';
             eraseConnect.disabled = false;
         } catch (error) {
-            terminal.writeLine(`Error: 擦除模式连接失败 - ${error.message}`);
-            eraseStatus.textContent = '连接失败';
+            terminal.writeLine('connectFail', { mode: modeNameMap.erase[currentLang], msg: error.message });
+            eraseStatus.textContent = currentLang === 'zh' ? '连接失败' : 'Connection Failed';
             eraseStatus.className = 'danger';
-            eraseConnect.textContent = '🔌 连接串口';
+            eraseConnect.textContent = i18n.connectSerialBtn[currentLang];
             eraseConnect.disabled = false;
         }
     });
 
-    // 执行擦除
     eraseFlash.addEventListener('click', async () => {
         if (!eraseLoader) {
-            terminal.writeLine('Error: 请先连接串口');
+            terminal.writeLine('noConnectionError');
             return;
         }
 
         try {
             eraseFlash.disabled = true;
-            eraseFlash.textContent = '🗑️ 擦除中...';
-            terminal.writeLine('Info: 开始擦除Flash...（请勿断开设备）');
+            eraseFlash.textContent = `${i18n.eraseBtn[currentLang].split(' ')[0]} 擦除中...`;
+            terminal.writeLine('eraseStart');
 
             await eraseLoader.erase_flash();
-            terminal.writeLine('Success: Flash擦除完成！');
+            terminal.writeLine('eraseSuccess');
 
-            eraseFlash.textContent = '🗑️ 执行擦除Flash';
+            eraseFlash.textContent = i18n.eraseBtn[currentLang];
             eraseFlash.disabled = false;
         } catch (error) {
-            terminal.writeLine(`Error: Flash擦除失败 - ${error.message}`);
-            eraseFlash.textContent = '🗑️ 执行擦除Flash';
+            terminal.writeLine('eraseFail', { msg: error.message });
+            eraseFlash.textContent = i18n.eraseBtn[currentLang];
             eraseFlash.disabled = false;
         }
     });
-
-    // 初始化日志
-    terminal.writeLine('Info: 欢迎使用WebESP固件烧录工具');
-    terminal.writeLine('Info: 功能说明：快捷烧录（设备+0x0）、自定义烧录（自由配置）、擦除Flash（单独擦除）');
-    terminal.writeLine('Info: 压缩烧录已默认开启，无需手动设置');
 });
