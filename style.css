@@ -1,32 +1,26 @@
+/* 全局基础样式 */
 :root {
     --primary: #3b82f6;
-    --primary-light: #60a5fa;
-    --primary-dark: #2563eb;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f97316;
     --bg: #f8fafc;
     --card-bg: #ffffff;
     --text: #1e293b;
-    --text-light: #64748b;
     --border: #e2e8f0;
-    --success: #10b981;
-    --danger: #ef4444;
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    --disabled: #94a3b8;
-    --disabled-bg: #f1f5f9;
-    --card-active: rgba(59, 130, 246, 0.1);
-    --card-border-active: var(--primary);
 }
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Roboto, Oxygen, sans-serif;
+    font-family: 'Segoe UI', Roboto, sans-serif;
 }
 
 body {
     background-color: var(--bg);
     color: var(--text);
-    line-height: 1.6;
     padding: 2rem 1rem;
     min-height: 100vh;
 }
@@ -42,12 +36,7 @@ body {
     color: var(--primary);
 }
 
-.logo h1 {
-    font-size: 2.2rem;
-    font-weight: 700;
-}
-
-/* 核心左右分栏布局 */
+/* 左右分栏 */
 .main-layout {
     display: grid;
     grid-template-columns: 1fr;
@@ -56,25 +45,20 @@ body {
 
 @media (min-width: 992px) {
     .main-layout {
-        grid-template-columns: 450px 1fr;
+        grid-template-columns: 500px 1fr;
     }
 }
 
-/* 通用卡片样式 */
+/* 通用卡片 */
 .card {
     background: var(--card-bg);
     border-radius: 0.8rem;
     box-shadow: var(--shadow);
     padding: 2rem;
-    transition: all 0.2s ease;
     height: 100%;
 }
 
-.card:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-}
-
-/* 步骤标题通用样式 */
+/* 步骤标题 */
 .form-step {
     margin-bottom: 2rem;
 }
@@ -114,7 +98,7 @@ body {
     content: '3';
 }
 
-/* 设备卡片容器+卡片样式（核心：图片设备选择） */
+/* 设备图片卡片 */
 .device-cards {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -137,8 +121,8 @@ body {
 }
 
 .device-card.active {
-    border-color: var(--card-border-active);
-    background-color: var(--card-active);
+    border-color: var(--primary);
+    background-color: rgba(59, 130, 246, 0.1);
 }
 
 .device-card img {
@@ -151,118 +135,144 @@ body {
 .device-name {
     font-size: 0.9rem;
     font-weight: 500;
-    color: var(--text);
 }
 
-/* 芯片信息+固件提示 */
+/* 芯片信息 */
 #chip-info {
-    color: var(--text);
     font-size: 0.85rem;
     margin-bottom: 0.5rem;
-}
-
-.firmware-tip {
-    font-size: 0.9rem;
-    color: var(--text-light);
-    padding: 0.6rem;
-    background-color: #f1f5f9;
-    border-radius: 0.4rem;
-}
-
-#firmware-info {
-    color: var(--primary);
-    font-weight: 500;
-}
-
-/* 选择框+按钮通用样式 */
-label {
-    display: block;
-    margin-bottom: 0.8rem;
-    font-weight: 500;
     color: var(--text);
 }
 
-select,
-button {
-    width: 100%;
-    padding: 0.9rem;
-    border: 1px solid var(--border);
-    border-radius: 0.6rem;
-    font-size: 1rem;
-    transition: all 0.2s ease;
-}
-
-select {
-    background-color: white;
-    cursor: pointer;
-    margin-bottom: 0.8rem;
-}
-
-select:focus,
-button:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-button {
-    background-color: var(--primary);
-    color: white;
-    border: none;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-}
-
-button:hover {
-    background-color: var(--primary-light);
-}
-
-button:disabled {
-    background-color: var(--disabled-bg);
-    color: var(--disabled);
-    cursor: not-allowed;
-    box-shadow: none;
-}
-
-/* 端口按钮+烧录按钮样式 */
-.port-btn {
-    background-color: var(--primary-dark);
-}
-
-.port-btn:hover {
-    background-color: var(--primary);
-}
-
-.btn-burn {
-    background-color: #10b981;
-}
-
-.btn-burn:hover {
-    background-color: #059669;
-}
-
-/* 进度条样式 */
-progress {
-    width: 100%;
-    height: 1rem;
-    border-radius: 0.5rem;
-    overflow: hidden;
+.mt-1 {
     margin-top: 1rem;
 }
 
-progress::-webkit-progress-bar {
-    background-color: var(--border);
+/* 表单控件 */
+.form-control,
+.address-input,
+.file-input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 0.6rem;
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
 }
 
-progress::-webkit-progress-value {
+.file-entry {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.8rem;
+}
+
+.file-entry .address-input {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.file-entry .file-input {
+    flex: 2;
+    margin-bottom: 0;
+}
+
+.file-entry .remove-file {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 0.6rem;
+    background-color: var(--danger);
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.add-file-btn {
+    width: 100%;
+    padding: 0.8rem;
+    border-radius: 0.6rem;
+    border: 1px dashed var(--primary);
+    background-color: transparent;
+    color: var(--primary);
+    cursor: pointer;
+    margin-bottom: 1rem;
+}
+
+/* 烧录选项 */
+.flash-options {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.flash-options label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+/* 按钮样式 */
+button {
+    padding: 0.9rem;
+    border: none;
+    border-radius: 0.6rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.port-btn,
+.erase-btn {
+    width: 100%;
+    margin-bottom: 0.8rem;
+}
+
+.port-btn {
     background-color: var(--primary);
 }
 
-/* 状态条样式 */
+.erase-btn {
+    background-color: var(--warning);
+    width: 48%;
+}
+
+.btn-burn {
+    background-color: var(--success);
+    width: 48%;
+}
+
+.flash-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+button:disabled {
+    background-color: #f1f5f9;
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+/* 进度条 */
+progress-bar {
+    display: block;
+    width: 100%;
+    height: 1rem;
+    border-radius: 0.5rem;
+    background-color: var(--border);
+    overflow: hidden;
+}
+
+progress-bar[value] {
+    display: block;
+    height: 100%;
+    background-color: var(--primary);
+    transition: width 0.2s ease;
+}
+
+/* 状态条 */
 .status-bar {
     display: flex;
     flex-direction: column;
@@ -281,22 +291,22 @@ progress::-webkit-progress-value {
     }
 }
 
-.status-bar span {
+#board,
+#status {
     font-weight: 500;
 }
 
-#device-status,
-#port-status {
+#status {
     color: var(--danger);
 }
 
-/* 右侧日志卡片+日志框样式 */
+/* 日志区 */
 .log-card {
     display: flex;
     flex-direction: column;
 }
 
-#log-box {
+#output {
     flex: 1;
     width: 100%;
     min-height: 600px;
@@ -307,8 +317,7 @@ progress::-webkit-progress-value {
     padding: 1rem;
     font-family: monospace;
     font-size: 0.9rem;
-    color: var(--text);
-    white-space: pre-line;
+    white-space: pre-wrap;
     overflow-y: auto;
     line-height: 1.5;
 }
