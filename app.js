@@ -7,7 +7,7 @@ import { i18n, typeNameMap, modeNameMap } from './i18n.js';
 
 ready(() => {
     // 全局变量
-    let currentLang = 'zh'; // 默认中文
+    let currentLang = 'en'; // 默认中文
     const output = document.getElementById('output');
     const langSwitch = document.getElementById('lang-switch');
     // 烧录器实例：快捷/自定义/擦除
@@ -75,7 +75,7 @@ ready(() => {
         // 切换卡片选中样式
         document.querySelectorAll('.selection-card').forEach(card => card.classList.toggle('active', card.dataset.type === type));
         document.querySelectorAll('.function-card').forEach(card => card.classList.toggle('active', card.id === `${type}-card`));
-        terminal.writeLine(`Info: ${t('activateFunction').replace('{type}', typeNameMap[type][currentLang])}`);
+        // terminal.writeLine(`Info: ${t('activateFunction').replace('{type}', typeNameMap[type][currentLang])}`);
     }
 
     // ==================== 中英文切换绑定 ====================
@@ -107,14 +107,14 @@ ready(() => {
             quickAddrInput.value = dev.defaultAddr || '0x000000';
             // 2. 自动加载firmware文件夹中的对应固件
             try {
-                terminal.writeLine(`Info: ${t('selectDeviceSuccess').replace('{device}', dev.label).replace('{firmware}', dev.firmwarePath).replace('{addr}', dev.defaultAddr)}`);
+                // terminal.writeLine(`Info: ${t('selectDeviceSuccess').replace('{device}', dev.label).replace('{firmware}', dev.firmwarePath).replace('{addr}', dev.defaultAddr)}`);
                 const response = await fetch(dev.firmwarePath);
                 if (!response.ok) throw new Error(`HTTP ${response.status} (文件不存在/路径错误)`);
                 firmwareBlob = await response.blob(); // 保存固件Blob，供后续烧录使用
                 // terminal.writeLine(`Success: 固件【${dev.firmwarePath}】加载成功`);
             } catch (e) {
                 firmwareBlob = null; // 加载失败清空，后续烧录会校验
-                terminal.writeLine(`Error: ${t('firmwareLoadFail').replace('{firmware}', dev.firmwarePath).replace('{msg}', e.message)}`);
+                // terminal.writeLine(`Error: ${t('firmwareLoadFail').replace('{firmware}', dev.firmwarePath).replace('{msg}', e.message)}`);
             }
 
             // 3. 更新设备状态显示
@@ -154,13 +154,13 @@ ready(() => {
             updatePortStatus('port-dot', 'port-text', true);
             qConnectBtn.textContent = t('connectPortBtn');
             qConnectBtn.disabled = false;
-            terminal.writeLine(`Success: ${t('connectSuccess')}（${selectedDevice.chip.replace('_', '-')}）`);
+            // terminal.writeLine(`Success: ${t('connectSuccess')}（${selectedDevice.chip.replace('_', '-')}）`);
         } catch (e) {
             // 连接失败：圆点保持红色，恢复按钮，日志报错
             updatePortStatus('port-dot', 'port-text', false);
             qConnectBtn.textContent = t('connectPortBtn');
             qConnectBtn.disabled = false;
-            terminal.writeLine(`Error: ${t('connectFail').replace('{msg}', e.message)}`);
+            // terminal.writeLine(`Error: ${t('connectFail').replace('{msg}', e.message)}`);
         }
     });
 
@@ -184,7 +184,7 @@ ready(() => {
             const loadingText = currentLang === 'zh' ? '⚡ 烧录中...' : '⚡ Burning...';
             qFlashBtn.textContent = loadingText;
             qProgress.value = 0;
-            terminal.writeLine(`Info: ${t('burnStart').replace('{file}', selectedDevice.firmwarePath).replace('{addr}', quickAddr)}`);
+            // terminal.writeLine(`Info: ${t('burnStart').replace('{file}', selectedDevice.firmwarePath).replace('{addr}', quickAddr)}`);
 
             // 读取已加载的固件Blob数据
             const data = await readAsBinaryString(firmwareBlob);
@@ -208,13 +208,13 @@ ready(() => {
             qProgress.value = 0;
             qFlashBtn.textContent = t('burnBtn');
             qFlashBtn.disabled = false;
-            terminal.writeLine(`Success: ${t('burnSuccess')}（${selectedDevice.label}）`);
+            // terminal.writeLine(`Success: ${t('burnSuccess')}（${selectedDevice.label}）`);
         } catch (e) {
             // 烧录失败：恢复按钮，进度条归0，日志报错
             qProgress.value = 0;
             qFlashBtn.textContent = t('burnBtn');
             qFlashBtn.disabled = false;
-            terminal.writeLine(`Error: ${t('burnFail').replace('{msg}', e.message)}`);
+            // terminal.writeLine(`Error: ${t('burnFail').replace('{msg}', e.message)}`);
         }
     });
 
@@ -348,15 +348,15 @@ ready(() => {
         try {
             eErase.disabled = true;
             eErase.textContent = currentLang === 'zh' ? '🗑️ 擦除中...' : '🗑️ Erasing...';
-            terminal.writeLine(`Info: ${t('eraseStart')}`);
+            // terminal.writeLine(`Info: ${t('eraseStart')}`);
             await eraseLoader.erase_flash();
             eErase.textContent = t('eraseBtn');
             eErase.disabled = false;
-            terminal.writeLine(`Success: ${t('eraseSuccess')}`);
+            // terminal.writeLine(`Success: ${t('eraseSuccess')}`);
         } catch (e) {
             eErase.textContent = t('eraseBtn');
             eErase.disabled = false;
-            terminal.writeLine(`Error: ${t('eraseFail').replace('{msg}', e.message)}`);
+            // terminal.writeLine(`Error: ${t('eraseFail').replace('{msg}', e.message)}`);
         }
     });
 
