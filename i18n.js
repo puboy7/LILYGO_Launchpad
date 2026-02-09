@@ -1,10 +1,10 @@
-// 双语配置：key-统一标识，value-中/英文文本
+// 双语配置：LILYGO品牌版
 export const i18n = {
     // 页面标题
-    title: { zh: "WebESP 固件一键烧录工具", en: "WebESP Firmware One-Click Burner" },
+    title: { zh: "LILYGO ESP32 固件在线烧录工具", en: "LILYGO ESP32 Firmware Online Burner" },
     // 功能选择卡片
     quickCardTitle: { zh: "快捷烧录", en: "Quick Burn" },
-    quickCardDesc: { zh: "选设备 → 连端口 → 烧固件", en: "Select → Connect → Burn" },
+    quickCardDesc: { zh: "选设备 → 选版本 → 连端口 → 烧固件", en: "Select Dev → Ver → Connect → Burn" },
     customCardTitle: { zh: "自定义烧录", en: "Custom Burn" },
     customCardDesc: { zh: "自由选固件 → 自定义地址", en: "Custom Firmware + Address" },
     eraseCardTitle: { zh: "擦除Flash", en: "Erase Flash" },
@@ -15,6 +15,7 @@ export const i18n = {
     eraseConfigTitle: { zh: "擦除Flash配置", en: "Erase Flash Config" },
     // 标签文字
     selectDeviceLabel: { zh: "点击设备图片选择", en: "Click Device to Select" },
+    firmwareVersionLabel: { zh: "选择固件版本", en: "Select Firmware Version" },
     firmwareAddrLabel: { zh: "固件烧录地址", en: "Firmware Burn Address" },
     firmwareListLabel: { zh: "固件文件列表（自定义地址）", en: "Firmware List (Custom Address)" },
     logTitle: { zh: "操作日志", en: "Operation Log" },
@@ -31,23 +32,25 @@ export const i18n = {
     noDeviceText: { zh: "未选择设备", en: "No Device Selected" },
     // 日志提示
     activateFunction: { zh: "已激活【{type}】功能", en: "Activated [{type}] Function" },
-    selectDeviceSuccess: { zh: "选中设备{device}，自动绑定固件：{firmware}，默认地址：{addr}", en: "Selected {device}, Auto bind firmware: {firmware}, Default address: {addr}" },
-    firmwareLoadFail: { zh: "加载固件{firmware}失败：{msg}", en: "Load firmware {firmware} failed: {msg}" },
-    connectSuccess: { zh: "设备端口连接成功", en: "Device port connected successfully" },
-    connectFail: { zh: "设备端口连接失败 - {msg}", en: "Device port connect failed - {msg}" },
-    burnStart: { zh: "开始烧录固件：{file}（地址：{addr}），自动擦除+压缩烧录", en: "Start burning firmware: {file} (Address: {addr}), Auto Erase + Compress" },
-    burnSuccess: { zh: "固件烧录完成！设备已自动重启", en: "Firmware burned successfully! Device restarted automatically" },
-    burnFail: { zh: "固件烧录失败 - {msg}", en: "Firmware burn failed - {msg}" },
-    eraseStart: { zh: "开始擦除Flash...（请勿断开设备）", en: "Start erasing Flash... (Do not disconnect)" },
-    eraseSuccess: { zh: "Flash擦除完成！", en: "Flash erase completed!" },
-    eraseFail: { zh: "Flash擦除失败 - {msg}", en: "Flash erase failed - {msg}" },
-    noDeviceError: { zh: "请先选择设备型号", en: "Please select a device model first" },
-    noConnectionError: { zh: "设备端口未连接，请先点击【连接设备端口】", en: "Device port not connected, please click [Connect Device Port] first" },
-    addressFormatError: { zh: "地址格式错误：{addr}（需以0x开头的十六进制数）", en: "Invalid address format: {addr} (Must be hex starting with 0x)" },
-    noFileError: { zh: "请选择固件文件", en: "Please select firmware file" },
-    allFileError: { zh: "请选择所有固件文件", en: "Please select all firmware files" },
-    initLog1: { zh: "欢迎使用WebESP固件一键烧录工具", en: "Welcome to WebESP Firmware One-Click Burner" },
-    initLog2: { zh: "快捷烧录流程：选设备 → 连接端口 → 点击烧录", en: "Quick Burn Process: Select Device → Connect Port → Click Burn" },
+    loadFirmwareVersionSuccess: { zh: "加载{device}的固件版本：{versions}", en: "Load {device} firmware versions: {versions}" },
+    selectDeviceSuccess: { zh: "选中LILYGO {device}，默认烧录地址：{addr}", en: "Selected LILYGO {device}, Default Burn Address: {addr}" },
+    firmwareLoadFail: { zh: "加载固件{firmware}失败：{msg}", en: "Load Firmware {firmware} Failed: {msg}" },
+    connectSuccess: { zh: "设备端口连接成功", en: "Device Port Connected Successfully" },
+    connectFail: { zh: "设备端口连接失败 - {msg}", en: "Device Port Connect Failed - {msg}" },
+    burnStart: { zh: "开始烧录固件：{file}（地址：{addr}），自动擦除+压缩烧录", en: "Start Burning Firmware: {file} (Address: {addr}), Auto Erase + Compress" },
+    burnSuccess: { zh: "固件烧录完成！设备已自动重启", en: "Firmware Burn Completed! Device Restarted Automatically" },
+    burnFail: { zh: "固件烧录失败 - {msg}", en: "Firmware Burn Failed - {msg}" },
+    eraseStart: { zh: "开始擦除Flash...（请勿断开设备）", en: "Start Erasing Flash... (Do Not Disconnect)" },
+    eraseSuccess: { zh: "Flash擦除完成！", en: "Flash Erase Completed!" },
+    eraseFail: { zh: "Flash擦除失败 - {msg}", en: "Flash Erase Failed - {msg}" },
+    noDeviceError: { zh: "请先选择LILYGO设备型号", en: "Please Select LILYGO Device Model First" },
+    selectFirmwareVersionFirst: { zh: "请先选择固件版本", en: "Please Select Firmware Version First" },
+    noConnectionError: { zh: "设备端口未连接，请先点击【连接设备端口】", en: "Device Port Not Connected, Please Click [Connect Device Port] First" },
+    addressFormatError: { zh: "地址格式错误：{addr}（需以0x开头的十六进制数）", en: "Invalid Address Format: {addr} (Must be Hex Starting with 0x)" },
+    noFileError: { zh: "请选择固件文件", en: "Please Select Firmware File" },
+    allFileError: { zh: "请选择所有固件文件", en: "Please Select All Firmware Files" },
+    initLog1: { zh: "欢迎使用LILYGO ESP32固件在线烧录工具", en: "Welcome to LILYGO ESP32 Firmware Online Burner" },
+    initLog2: { zh: "快捷烧录流程：选设备 → 选版本 → 连接端口 → 点击烧录", en: "Quick Burn Process: Select Dev → Ver → Connect Port → Click Burn" },
     initLog3: { zh: "默认配置：波特率115200 | 自动擦除Flash | 压缩烧录", en: "Default Config: Baudrate 115200 | Auto Erase Flash | Compressed Burn" }
 };
 

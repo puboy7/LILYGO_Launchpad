@@ -1,19 +1,17 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title id="page-title">WebESP 固件一键烧录工具</title>
+  <title id="page-title">LILYGO ESP32 固件在线烧录工具</title>
   <link rel="stylesheet" href="style.css">
   <!-- MD5加密库，烧录必备 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
 </head>
-
 <body>
   <div class="container">
     <div class="logo">
-      <h1 id="logo-title">WebESP 固件一键烧录工具</h1>
+      <h1 id="logo-title">LILYGO ESP32 固件在线烧录工具</h1>
       <button id="lang-switch" class="lang-switch-btn">English</button>
     </div>
 
@@ -24,7 +22,7 @@
           <div class="selection-card active" data-type="quick">
             <div class="card-icon">⚡</div>
             <div class="card-title" data-i18n="quickCardTitle">快捷烧录</div>
-            <div class="card-desc" data-i18n="quickCardDesc">选设备 → 连端口 → 烧固件</div>
+            <div class="card-desc" data-i18n="quickCardDesc">选设备 → 选版本 → 连端口 → 烧固件</div>
           </div>
           <div class="selection-card" data-type="custom">
             <div class="card-icon">🔧</div>
@@ -38,24 +36,30 @@
           </div>
         </div>
 
-        <!-- 快捷烧录（核心：自动绑固件+先连后烧） -->
+        <!-- 快捷烧录（核心：设备+固件版本双选择） -->
         <div class="function-card active" id="quick-card">
           <div class="function-title" data-i18n="quickConfigTitle">快捷烧录配置</div>
           <label data-i18n="selectDeviceLabel">点击设备图片选择</label>
           <div class="device-cards" id="device-cards"></div>
 
           <div class="mt-2">
+            <!-- 固件版本选择框 -->
+            <label data-i18n="firmwareVersionLabel">选择固件版本</label>
+            <select id="firmware-version" class="address-input mt-1" disabled>
+              <option value="" selected>请先选择设备</option>
+            </select>
+
             <select id="quick-baudrate" style="display:none;">
               <option value="115200" selected>115200</option>
             </select>
-            <!-- 烧录地址输入框（选设备自动填充，可手动修改） -->
+            <!-- 烧录地址输入框 -->
             <label data-i18n="firmwareAddrLabel">固件烧录地址</label>
             <input type="text" class="address-input mt-1" id="quick-addr" value="0x000000" placeholder="0x000000">
-            <!-- 连接端口按钮（仅连串口） -->
-            <button id="quick-connect" class="port-btn mt-1" data-i18n="connectPortBtn">🔌 连接设备端口</button>
-            <!-- 烧录固件按钮（连接成功后点击） -->
-            <button id="quick-flash" class="btn-burn mt-1 w-100" data-i18n="burnBtn">⚡ 烧录固件</button>
-            <!-- 单行红绿圆点状态 -->
+            <!-- 连接端口按钮 -->
+            <button id="quick-connect" class="port-btn mt-1" data-i18n="connectPortBtn" disabled>🔌 连接设备端口</button>
+            <!-- 烧录固件按钮 -->
+            <button id="quick-flash" class="btn-burn mt-1 w-100" data-i18n="burnBtn" disabled>⚡ 烧录固件</button>
+            <!-- 状态行 -->
             <div class="status-row mt-1">
               <span>
                 <span class="status-dot disconnected" id="port-dot"></span>
@@ -67,11 +71,11 @@
 
           <!-- 烧录进度条 -->
           <progress id="quick-progress" value="0" max="100" class="mt-1"></progress>
-          <!-- 隐藏文件选择框（自动加载固件，无需手动操作） -->
+          <!-- 隐藏文件选择框 -->
           <input type="file" id="quick-file" style="display: none;">
         </div>
 
-        <!-- 自定义烧录（保留原有功能，无修改） -->
+        <!-- 自定义烧录 -->
         <div class="function-card" id="custom-card">
           <div class="function-title" data-i18n="customConfigTitle">自定义烧录配置</div>
           <div>
@@ -103,7 +107,7 @@
           <progress id="custom-progress" value="0" max="100" class="mt-1"></progress>
         </div>
 
-        <!-- 擦除Flash（保留原有功能，无修改） -->
+        <!-- 擦除Flash -->
         <div class="function-card" id="erase-card">
           <div class="function-title" data-i18n="eraseConfigTitle">擦除Flash配置</div>
           <select id="erase-baudrate" style="display:none;">
@@ -136,5 +140,4 @@
   <script type="module" src="firmware-library.js"></script>
   <script type="module" src="app.js"></script>
 </body>
-
 </html>

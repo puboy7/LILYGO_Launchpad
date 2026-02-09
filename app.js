@@ -7,17 +7,18 @@ import { i18n, typeNameMap, modeNameMap } from './i18n.js';
 
 ready(() => {
     // 全局变量
-    let currentLang = 'en'; // 默认中文
+    let currentLang = 'zh'; // 默认中文
     const output = document.getElementById('output');
     const langSwitch = document.getElementById('lang-switch');
     // 烧录器实例：快捷/自定义/擦除
     let quickLoader = null, customLoader = null, eraseLoader = null;
     let selectedDevice = null; // 选中的设备
-    let firmwareBlob = null;  // 选中设备对应的固件Blob
+    let selectedFirmwarePath = ''; // 选中的固件路径
+    let firmwareBlob = null;  // 选中固件的Blob数据
     let currentType = 'quick'; // 默认激活快捷烧录
     const DEFAULT_BAUDRATE = 115200; // 固定波特率
 
-    // 终端日志对象（补充clean方法，解决之前的报错）
+    // 终端日志对象（补充clean方法）
     const terminal = {
         clean: () => { output.value = ''; },
         write: (data) => { output.value += data; },
@@ -52,9 +53,14 @@ ready(() => {
         if (!selectedDevice) {
             document.getElementById('device-label').textContent = t('noDeviceText');
         }
+        // 固件版本选择框默认提示文字
+        const versionSelect = document.getElementById('firmware-version');
+        if (versionSelect.disabled) {
+            versionSelect.innerHTML = `<option value="" selected>${currentLang === 'zh' ? '请先选择设备' : 'Please select device first'}</option>`;
+        }
     }
 
-    // 更新端口状态（红绿圆点切换，统一方法避免重复代码）
+    // 更新端口状态（红绿圆点切换，统一方法）
     function updatePortStatus(dotId, textId, isConnected) {
         const dot = document.getElementById(dotId);
         const text = document.getElementById(textId);
@@ -75,7 +81,7 @@ ready(() => {
         // 切换卡片选中样式
         document.querySelectorAll('.selection-card').forEach(card => card.classList.toggle('active', card.dataset.type === type));
         document.querySelectorAll('.function-card').forEach(card => card.classList.toggle('active', card.id === `${type}-card`));
-        // terminal.writeLine(`Info: ${t('activateFunction').replace('{type}', typeNameMap[type][currentLang])}`);
+        terminal.writeLine(`Info: ${t('activateFunction').replace('{type}', typeNameMap[type][currentLang])}`);
     }
 
     // ==================== 中英文切换绑定 ====================
@@ -89,9 +95,14 @@ ready(() => {
         card.addEventListener('click', () => activateFunction(card.dataset.type));
     });
 
-    // ==================== 核心：设备卡片渲染+选设备自动绑固件/填地址 ====================
+    // ==================== 核心：设备卡片渲染+选设备加载固件版本/填地址 ====================
     const deviceCardsEl = document.getElementById('device-cards');
     const quickAddrInput = document.getElementById('quick-addr');
+    const firmwareVersionSelect = document.getElementById('firmware-version');
+    const qConnectBtn = document.getElementById('quick-connect');
+    const qFlashBtn = document.getElementById('quick-flash');
+    const qProgress = document.getElementById('quick-progress');
+
     deviceList.forEach(dev => {
         const card = document.createElement('div');
         card.className = 'device-card';
@@ -105,33 +116,79 @@ ready(() => {
 
             // 1. 自动填充该设备的默认烧录地址
             quickAddrInput.value = dev.defaultAddr || '0x000000';
-            // 2. 自动加载firmware文件夹中的对应固件
-            try {
-                // terminal.writeLine(`Info: ${t('selectDeviceSuccess').replace('{device}', dev.label).replace('{firmware}', dev.firmwarePath).replace('{addr}', dev.defaultAddr)}`);
-                const response = await fetch(dev.firmwarePath);
-                if (!response.ok) throw new Error(`HTTP ${response.status} (文件不存在/路径错误)`);
-                firmwareBlob = await response.blob(); // 保存固件Blob，供后续烧录使用
-                // terminal.writeLine(`Success: 固件【${dev.firmwarePath}】加载成功`);
-            } catch (e) {
-                firmwareBlob = null; // 加载失败清空，后续烧录会校验
-                // terminal.writeLine(`Error: ${t('firmwareLoadFail').replace('{firmware}', dev.firmwarePath).replace('{msg}', e.message)}`);
-            }
+            terminal.writeLine(`Info: ${t('selectDeviceSuccess').replace('{device}', dev.label).replace('{addr}', dev.defaultAddr)}`);
 
-            // 3. 更新设备状态显示
-            const deviceText = `${dev.label} (${dev.chip.replace('_', '-')})`;
+            // 2. 加载该设备的所有固件版本到下拉框
+            firmwareVersionSelect.innerHTML = ''; // 清空原有选项
+            firmwareVersionSelect.disabled = false; // 启用下拉框
+            // 添加默认提示选项
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = currentLang === 'zh' ? '请选择固件版本' : 'Select firmware version';
+            firmwareVersionSelect.appendChild(defaultOption);
+            // 添加该设备的所有固件版本
+            dev.firmwareVersions.forEach(version => {
+                const option = document.createElement('option');
+                option.value = version.path; // 值为固件路径
+                option.textContent = version.name; // 显示版本名
+                firmwareVersionSelect.appendChild(option);
+            });
+            // 日志提示加载成功
+            const versionNames = dev.firmwareVersions.map(v => v.name).join(', ');
+            terminal.writeLine(`Info: ${t('loadFirmwareVersionSuccess').replace('{device}', dev.label).replace('{versions}', versionNames)}`);
+
+            // 3. 重置按钮/固件/进度条状态
+            qConnectBtn.disabled = true;
+            qFlashBtn.disabled = true;
+            firmwareBlob = null;
+            selectedFirmwarePath = '';
+            qProgress.value = 0;
+
+            // 4. 更新设备状态显示
+            const deviceText = `${dev.value} (${dev.chip.replace('_', '-')})`;
             document.getElementById('device-label').textContent = deviceText;
             document.getElementById('device-label').style.color = 'var(--primary)';
         });
         deviceCardsEl.appendChild(card);
     });
 
+    // ==================== 核心：固件版本选择事件（选版本自动加载固件） ====================
+    firmwareVersionSelect.addEventListener('change', async () => {
+        const selectedPath = firmwareVersionSelect.value;
+        const selectedVersionName = firmwareVersionSelect.options[firmwareVersionSelect.selectedIndex].text;
+        if (!selectedPath || !selectedDevice) {
+            // 未选版本/设备：清空固件，禁用按钮
+            firmwareBlob = null;
+            selectedFirmwarePath = '';
+            qConnectBtn.disabled = true;
+            qFlashBtn.disabled = true;
+            return;
+        }
+
+        // 加载选中版本的固件
+        try {
+            selectedFirmwarePath = selectedPath;
+            terminal.writeLine(`Info: 选择固件版本【${selectedVersionName}】，固件路径：${selectedPath}`);
+            const response = await fetch(selectedPath);
+            if (!response.ok) throw new Error(`HTTP ${response.status} (文件不存在/路径错误/跨域)`);
+            firmwareBlob = await response.blob(); // 保存固件Blob
+            terminal.writeLine(`Success: 固件【${selectedVersionName}】加载成功`);
+            qConnectBtn.disabled = false; // 启用连接按钮
+        } catch (e) {
+            // 加载失败：清空固件，禁用按钮
+            firmwareBlob = null;
+            selectedFirmwarePath = '';
+            qConnectBtn.disabled = true;
+            qFlashBtn.disabled = true;
+            terminal.writeLine(`Error: ${t('firmwareLoadFail').replace('{firmware}', selectedVersionName).replace('{msg}', e.message)}`);
+        }
+    });
+
     // ==================== 快捷烧录：仅连接设备端口（无烧录，单独逻辑） ====================
-    const qConnectBtn = document.getElementById('quick-connect');
-    const qFlashBtn = document.getElementById('quick-flash');
-    const qProgress = document.getElementById('quick-progress');
     qConnectBtn.addEventListener('click', async () => {
-        // 前置校验：必须先选择设备
+        // 前置校验：必须先选择设备+固件版本
         if (!selectedDevice) return terminal.writeLine(`Error: ${t('noDeviceError')}`);
+        if (!selectedFirmwarePath) return terminal.writeLine(`Error: ${t('selectFirmwareVersionFirst')}`);
 
         try {
             // 按钮状态：禁用+加载中
@@ -150,25 +207,28 @@ ready(() => {
             });
             await quickLoader.main_fn(); // 初始化烧录器，建立串口连接
 
-            // 连接成功：红绿圆点变绿，恢复按钮，日志提示
+            // 连接成功：红绿圆点变绿，恢复按钮，启用烧录按钮，日志提示
             updatePortStatus('port-dot', 'port-text', true);
             qConnectBtn.textContent = t('connectPortBtn');
             qConnectBtn.disabled = false;
-            // terminal.writeLine(`Success: ${t('connectSuccess')}（${selectedDevice.chip.replace('_', '-')}）`);
+            qFlashBtn.disabled = false; // 启用烧录按钮
+            terminal.writeLine(`Success: ${t('connectSuccess')}（${selectedDevice.chip.replace('_', '-')}）`);
         } catch (e) {
-            // 连接失败：圆点保持红色，恢复按钮，日志报错
+            // 连接失败：圆点保持红色，恢复按钮，禁用烧录按钮，日志报错
             updatePortStatus('port-dot', 'port-text', false);
             qConnectBtn.textContent = t('connectPortBtn');
             qConnectBtn.disabled = false;
-            // terminal.writeLine(`Error: ${t('connectFail').replace('{msg}', e.message)}`);
+            qFlashBtn.disabled = true;
+            terminal.writeLine(`Error: ${t('connectFail').replace('{msg}', e.message)}`);
         }
     });
 
     // ==================== 快捷烧录：烧录固件（必须先连接端口，单独逻辑） ====================
     qFlashBtn.addEventListener('click', async () => {
-        // 前置全校验：选设备+固件加载成功+已连接端口+地址格式正确
+        // 前置全校验：选设备+选版本+固件加载成功+已连接端口+地址格式正确
         if (!selectedDevice) return terminal.writeLine(`Error: ${t('noDeviceError')}`);
-        if (!firmwareBlob) return terminal.writeLine(`Error: ${t('firmwareLoadFail').replace('{firmware}', selectedDevice.firmwarePath).replace('{msg}', '固件未加载/加载失败，请重新选择设备')}`);
+        if (!selectedFirmwarePath) return terminal.writeLine(`Error: ${t('selectFirmwareVersionFirst')}`);
+        if (!firmwareBlob) return terminal.writeLine(`Error: ${t('firmwareLoadFail').replace('{firmware}', selectedFirmwarePath).replace('{msg}', '固件未加载/加载失败，请重新选择版本')}`);
         if (!quickLoader) return terminal.writeLine(`Error: ${t('noConnectionError')}`);
 
         // 地址格式校验
@@ -177,14 +237,15 @@ ready(() => {
             return terminal.writeLine(`Error: ${t('addressFormatError').replace('{addr}', quickAddr)}`);
         }
         const addrNum = parseInt(quickAddr); // 转成烧录所需的数字格式
+        const selectedVersionName = firmwareVersionSelect.options[firmwareVersionSelect.selectedIndex].text;
 
         try {
             // 烧录中：禁用按钮，重置进度条，日志提示
             qFlashBtn.disabled = true;
-            const loadingText = currentLang === 'zh' ? '⚡ 烧录中...' : '⚡ Burning...';
+            const loadingText = currentLang === 'zh' ? '⚡ 烧录中...' : '⚡ Flashing...';
             qFlashBtn.textContent = loadingText;
             qProgress.value = 0;
-            // terminal.writeLine(`Info: ${t('burnStart').replace('{file}', selectedDevice.firmwarePath).replace('{addr}', quickAddr)}`);
+            terminal.writeLine(`Info: ${t('burnStart').replace('{file}', `${selectedVersionName}`).replace('{addr}', quickAddr)}`);
 
             // 读取已加载的固件Blob数据
             const data = await readAsBinaryString(firmwareBlob);
@@ -198,7 +259,7 @@ ready(() => {
                 compress: true, // 压缩烧录（加快速度）
                 reportProgress: (_, written, total) => {
                     qProgress.value = (written / total) * 100;
-                    // terminal.writeLine(`Progress: 烧录进度 ${(written / total * 100).toFixed(2)}%`);
+                    terminal.writeLine(`Progress: 烧录进度 ${(written / total * 100).toFixed(2)}%`);
                 },
                 calculateMD5Hash: image => CryptoJS.MD5(CryptoJS.enc.Latin1.parse(image)).toString()
             });
@@ -208,13 +269,13 @@ ready(() => {
             qProgress.value = 0;
             qFlashBtn.textContent = t('burnBtn');
             qFlashBtn.disabled = false;
-            // terminal.writeLine(`Success: ${t('burnSuccess')}（${selectedDevice.label}）`);
+            terminal.writeLine(`Success: ${t('burnSuccess')}（${selectedDevice.label} - ${selectedVersionName}）`);
         } catch (e) {
             // 烧录失败：恢复按钮，进度条归0，日志报错
             qProgress.value = 0;
             qFlashBtn.textContent = t('burnBtn');
             qFlashBtn.disabled = false;
-            // terminal.writeLine(`Error: ${t('burnFail').replace('{msg}', e.message)}`);
+            terminal.writeLine(`Error: ${t('burnFail').replace('{msg}', e.message)}`);
         }
     });
 
@@ -258,12 +319,12 @@ ready(() => {
             updatePortStatus('c-port-dot', 'c-port-text', true);
             cConnect.textContent = t('connectPortBtn');
             cConnect.disabled = false;
-            // terminal.writeLine(`Success: 自定义烧录 - 设备端口连接成功`);
+            terminal.writeLine(`Success: 自定义烧录 - 设备端口连接成功`);
         } catch (e) {
             updatePortStatus('c-port-dot', 'c-port-text', false);
             cConnect.textContent = t('connectPortBtn');
             cConnect.disabled = false;
-            // terminal.writeLine(`Error: 自定义烧录 - 连接失败 - ${e.message}`);
+            terminal.writeLine(`Error: 自定义烧录 - 连接失败 - ${e.message}`);
         }
     });
 
@@ -282,12 +343,12 @@ ready(() => {
             }
             const data = await readAsBinaryString(fileInput.files[0]);
             fileArray.push({ data: data, address: parseInt(addrInput.value) });
-            // terminal.writeLine(`Info: 自定义烧录 - 添加文件：${fileInput.files[0].name}（地址：${addrInput.value}）`);
+            terminal.writeLine(`Info: 自定义烧录 - 添加文件：${fileInput.files[0].name}（地址：${addrInput.value}）`);
         }
         // 开始烧录
         try {
             cFlash.disabled = true;
-            cFlash.textContent = currentLang === 'zh' ? '⚡ 烧录中...' : '⚡ Burning...';
+            cFlash.textContent = currentLang === 'zh' ? '⚡ 烧录中...' : '⚡ Flashing...';
             cProgress.value = 0;
             await customLoader.write_flash({
                 fileArray: fileArray,
@@ -303,12 +364,12 @@ ready(() => {
             cProgress.value = 0;
             cFlash.textContent = t('burnBtn');
             cFlash.disabled = false;
-            // terminal.writeLine(`Success: 自定义烧录 - 烧录完成！设备已重启`);
+            terminal.writeLine(`Success: 自定义烧录 - 烧录完成！设备已重启`);
         } catch (e) {
             cProgress.value = 0;
             cFlash.textContent = t('burnBtn');
             cFlash.disabled = false;
-            // terminal.writeLine(`Error: 自定义烧录 - 烧录失败 - ${e.message}`);
+            terminal.writeLine(`Error: 自定义烧录 - 烧录失败 - ${e.message}`);
         }
     });
 
@@ -333,12 +394,12 @@ ready(() => {
             updatePortStatus('e-port-dot', 'e-port-text', true);
             eConnect.textContent = t('connectSerialBtn');
             eConnect.disabled = false;
-            // terminal.writeLine(`Success: 擦除Flash - 串口连接成功`);
+            terminal.writeLine(`Success: 擦除Flash - 串口连接成功`);
         } catch (e) {
             updatePortStatus('e-port-dot', 'e-port-text', false);
             eConnect.textContent = t('connectSerialBtn');
             eConnect.disabled = false;
-            // terminal.writeLine(`Error: 擦除Flash - 连接失败 - ${e.message}`);
+            terminal.writeLine(`Error: 擦除Flash - 连接失败 - ${e.message}`);
         }
     });
 
@@ -348,15 +409,15 @@ ready(() => {
         try {
             eErase.disabled = true;
             eErase.textContent = currentLang === 'zh' ? '🗑️ 擦除中...' : '🗑️ Erasing...';
-            // terminal.writeLine(`Info: ${t('eraseStart')}`);
+            terminal.writeLine(`Info: ${t('eraseStart')}`);
             await eraseLoader.erase_flash();
             eErase.textContent = t('eraseBtn');
             eErase.disabled = false;
-            // terminal.writeLine(`Success: ${t('eraseSuccess')}`);
+            terminal.writeLine(`Success: ${t('eraseSuccess')}`);
         } catch (e) {
             eErase.textContent = t('eraseBtn');
             eErase.disabled = false;
-            // terminal.writeLine(`Error: ${t('eraseFail').replace('{msg}', e.message)}`);
+            terminal.writeLine(`Error: ${t('eraseFail').replace('{msg}', e.message)}`);
         }
     });
 
