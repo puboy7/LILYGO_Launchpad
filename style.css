@@ -1,27 +1,35 @@
-/* 全局样式重置 */
+/* 全局样式重置 - 核心：去掉所有点击高亮/闪烁光标 */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: "Microsoft YaHei", Arial, sans-serif;
+    outline: none;
+    /* 去掉所有元素点击虚线框 */
+    user-select: none;
+    /* 禁止文本选中/闪烁光标 */
+    -webkit-user-select: none;
+    /* 兼容webkit内核浏览器 */
+    -moz-user-select: none;
+    /* 兼容Firefox */
+    -ms-user-select: none;
+    /* 兼容IE/Edge */
 }
 
-/* LILYGO品牌主题色配置 核心修改 */
+/* LILYGO品牌主题色配置 */
 :root {
     --primary: #4caf7d;
-    /* LILYGO主绿色 */
+    /* LILYGO官方主色：橙红色 */
     --primary-light: #FFF1E6;
-    /* 主色浅背景 */
-    --primary-dark: #E65C00;
-    /* 主色hover */
-    --success: #36B37E;
-    /* 成功绿（适配品牌） */
-    --success-dark: #258A5E;
-    --danger: #F5222D;
+    /* 主色浅调 */
+    --primary-dark: #E64A19;
+    /* 主色深调 */
+    --success: #4CAF50;
+    /* 成功绿（适配品牌视觉） */
+    --danger: #F44336;
     /* 危险红 */
-    --warning: #FAAD14;
+    --warning: #FFC107;
     /* 警告黄 */
-    --warning-dark: #D48806;
     --gray: #1153d6;
     --light-gray: #f3f4f6;
     --border: #e5e7eb;
@@ -55,7 +63,7 @@ body {
 .logo h1 {
     font-size: 1.8rem;
     color: var(--primary);
-    /* LILYGO橙色标题 */
+    /* LILYGO主色 */
     font-weight: 700;
 }
 
@@ -72,7 +80,7 @@ body {
 
 .lang-switch-btn:hover {
     background-color: var(--primary-dark);
-    /* 主色深色hover */
+    /* 主色深调hover */
 }
 
 /* 主布局 */
@@ -106,11 +114,11 @@ body {
     transition: all 0.2s;
 }
 
-/* 选中态适配LILYGO主色 */
+/* LILYGO选中态 */
 .selection-card.active {
     border-color: var(--primary);
-    background-color: var(--primary-light);
-    /* 浅橙色背景 */
+    background-color: rgba(255, 87, 34, 0.05);
+    /* 主色浅透底 */
 }
 
 .selection-card:hover {
@@ -153,7 +161,7 @@ body {
     font-weight: 600;
     margin-bottom: 1rem;
     color: var(--primary);
-    /* LILYGO橙色标题 */
+    /* LILYGO主色 */
 }
 
 label {
@@ -163,7 +171,7 @@ label {
     display: block;
 }
 
-/* 设备卡片 */
+/* 设备卡片 - 重点：双重保障去掉闪烁光标 */
 .device-cards {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -178,12 +186,18 @@ label {
     text-align: center;
     cursor: pointer;
     transition: all 0.2s;
+    outline: none;
+    /* 强制去掉点击外边框 */
+    user-select: none;
+    /* 强制禁止选中/光标 */
 }
 
-/* 设备选中态适配LILYGO */
+/* LILYGO设备选中态 */
 .device-card.active {
     border-color: var(--primary);
-    background-color: var(--primary-light);
+    background-color: rgba(255, 87, 34, 0.05);
+    outline: none;
+    /* 选中态也去掉外边框 */
 }
 
 .device-card img {
@@ -191,6 +205,8 @@ label {
     height: 60px;
     object-fit: contain;
     margin-bottom: 0.5rem;
+    pointer-events: none;
+    /* 图片本身也禁止点击态 */
 }
 
 .device-card .device-name {
@@ -198,7 +214,7 @@ label {
     font-weight: 500;
 }
 
-/* 地址输入框/版本选择框通用样式 */
+/* 地址输入框/版本选择框通用样式 - 仅保留输入时的focus（功能性需要） */
 .address-input {
     width: 100%;
     padding: 0.7rem;
@@ -206,6 +222,7 @@ label {
     border-radius: 0.5rem;
     font-size: 0.95rem;
     outline: none;
+    /* 去掉默认focus边框 */
     transition: border 0.2s;
     appearance: none;
     background: #fff url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 0.7rem center;
@@ -214,7 +231,7 @@ label {
 
 .address-input:focus {
     border-color: var(--primary);
-    /* 聚焦边框为LILYGO橙色 */
+    /* 仅保留边框变色，无虚线框 */
 }
 
 .address-input:disabled {
@@ -223,7 +240,7 @@ label {
     opacity: 0.8;
 }
 
-/* 按钮通用样式 核心修改 */
+/* 按钮通用样式 */
 .port-btn,
 .btn-burn,
 .erase-btn,
@@ -238,7 +255,7 @@ label {
     transition: all 0.2s;
 }
 
-/* 连接按钮-LILYGO主色 */
+/* LILYGO按钮样式 */
 .port-btn {
     background-color: var(--primary);
     color: white;
@@ -255,24 +272,22 @@ label {
     background-color: var(--primary-dark);
 }
 
-/* 烧录按钮-适配品牌绿 */
 .btn-burn {
     background-color: var(--success);
     color: white;
 }
 
 .btn-burn:hover:not(:disabled) {
-    background-color: var(--success-dark);
+    background-color: #388E3C;
 }
 
-/* 擦除按钮-适配品牌黄 */
 .erase-btn {
     background-color: var(--warning);
-    color: white;
+    color: #111827;
 }
 
 .erase-btn:hover {
-    background-color: var(--warning-dark);
+    background-color: #FFB300;
 }
 
 .add-file-btn {
@@ -310,6 +325,8 @@ label {
     border: 1px solid var(--border);
     border-radius: 0.5rem;
     font-size: 0.9rem;
+    outline: none;
+    /* 去掉文件选择框点击虚线 */
 }
 
 .file-entry .remove-file {
@@ -337,7 +354,7 @@ progress::-webkit-progress-bar {
 
 progress::-webkit-progress-value {
     background-color: var(--primary);
-    /* 进度条为LILYGO橙色 */
+    /* LILYGO主色进度条 */
     border-radius: 4px;
 }
 
@@ -350,31 +367,49 @@ progress::-webkit-progress-value {
     margin-top: 0.5rem;
 }
 
+/* 状态圆点 */
 .status-dot {
     display: inline-block;
-    width: 8px;
-    height: 8px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
-    margin-right: 0.3rem;
+    margin-right: 0.5rem;
 }
 
 .status-dot.connected {
     background-color: var(--success);
-    /* 连接成功绿 */
 }
 
 .status-dot.disconnected {
     background-color: var(--danger);
-    /* 未连接红 */
 }
 
-/* 日志卡片 */
+/* 间距类 */
+.mt-1 {
+    margin-top: 0.5rem;
+}
+
+.mt-2 {
+    margin-top: 1rem;
+}
+
+.w-100 {
+    width: 100%;
+}
+
+/* 右侧日志面板 */
+.right-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
 .log-card {
     background-color: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: 0.8rem;
     padding: 1.5rem;
-    height: calc(100vh - 8rem);
+    height: calc(100vh - 80px);
     display: flex;
     flex-direction: column;
 }
@@ -389,11 +424,9 @@ progress::-webkit-progress-value {
     line-height: 1.5;
     resize: none;
     outline: none;
-    background-color: var(--light-gray);
-}
-
-.log-card textarea:focus {
-    border-color: var(--primary);
+    /* 去掉日志框focus虚线 */
+    background-color: #fafafa;
+    color: var(--text);
 }
 
 /* 响应式适配 */
@@ -412,10 +445,6 @@ progress::-webkit-progress-value {
         grid-template-columns: 1fr;
     }
 
-    .logo h1 {
-        font-size: 1.5rem;
-    }
-
     .device-cards {
         grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     }
@@ -424,16 +453,8 @@ progress::-webkit-progress-value {
         width: 50px;
         height: 50px;
     }
-}
 
-.mt-1 {
-    margin-top: 0.5rem;
-}
-
-.mt-2 {
-    margin-top: 1rem;
-}
-
-.w-100 {
-    width: 100%;
+    .logo h1 {
+        font-size: 1.5rem;
+    }
 }
