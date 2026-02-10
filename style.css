@@ -50,7 +50,7 @@ body {
     margin: 0 auto;
 }
 
-/* 头部logo */
+/* 头部logo - 适配logo图片+标题布局 */
 .logo {
     display: flex;
     justify-content: space-between;
@@ -60,11 +60,45 @@ body {
     border-bottom: 1px solid var(--border);
 }
 
+/* logo图片+标题组合容器 */
+.logo-group {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    /* logo和标题之间的间距 */
+}
+
+/* LILYGO logo图片样式 */
+.logo-img {
+    width: 48px;
+    /* logo宽度，可根据实际调整 */
+    height: 48px;
+    /* 等比例，保持logo不变形 */
+    object-fit: contain;
+    /* 防止logo拉伸 */
+    flex-shrink: 0;
+    /* 小屏幕下不缩小logo */
+}
+
 .logo h1 {
     font-size: 1.8rem;
     color: var(--primary);
     /* LILYGO主色 */
     font-weight: 700;
+    margin: 0;
+    /* 清除默认margin，避免排版错乱 */
+}
+
+/* 响应式适配：小屏幕下缩小logo和标题 */
+@media (max-width: 576px) {
+    .logo-img {
+        width: 36px;
+        height: 36px;
+    }
+
+    .logo h1 {
+        font-size: 1.2rem;
+    }
 }
 
 .lang-switch-btn {

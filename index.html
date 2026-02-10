@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title id="page-title">LILYGO Web Flasher</title>
-  <!-- 正确的 favicon 路径：指向 images 文件夹 -->
+  <!-- 标签页图标：指向 images/favicon.ico -->
   <link rel="icon" href="images/favicon.ico" type="image/x-icon">
   <link rel="shortcut icon" href="images/favicon.ico?v=2" type="image/x-icon">
   <link rel="stylesheet" href="style.css">
@@ -14,14 +14,17 @@
 
 <body>
   <div class="container">
+    <!-- 头部 logo 区域：新增 logo 图片 + 标题组合 -->
     <div class="logo">
-      <h1 id="logo-title">LILYGO ESP32 固件在线烧录工具</h1>
+      <div class="logo-group">
+        <!-- LILYGO logo 图片：请将图片放在 images 文件夹，替换为你的 logo 文件名 -->
+        <img src="images/favicon.ico" alt="LILYGO Logo" class="logo-img">
+        <h1 id="logo-title">LILYGO ESP32 固件在线烧录工具</h1>
+      </div>
       <button id="lang-switch" class="lang-switch-btn">English</button>
     </div>
-
     <div class="main-layout">
       <div class="left-panel">
-        <!-- 功能卡片切换 -->
         <div class="card-selection">
           <div class="selection-card active" data-type="quick">
             <div class="card-icon">⚡</div>
@@ -40,14 +43,12 @@
           </div>
         </div>
 
-        <!-- 快捷烧录（核心：设备+固件版本双选择） -->
         <div class="function-card active" id="quick-card">
           <div class="function-title" data-i18n="quickConfigTitle">快捷烧录配置</div>
           <label data-i18n="selectDeviceLabel">点击设备图片选择</label>
           <div class="device-cards" id="device-cards"></div>
 
           <div class="mt-2">
-            <!-- 固件版本选择框 -->
             <label data-i18n="firmwareVersionLabel">选择固件版本</label>
             <select id="firmware-version" class="address-input mt-1" disabled>
               <option value="" selected>请先选择设备</option>
@@ -56,14 +57,10 @@
             <select id="quick-baudrate" style="display:none;">
               <option value="115200" selected>115200</option>
             </select>
-            <!-- 烧录地址输入框 -->
             <label data-i18n="firmwareAddrLabel">固件烧录地址</label>
             <input type="text" class="address-input mt-1" id="quick-addr" value="0x000000" placeholder="0x000000">
-            <!-- 连接端口按钮 -->
             <button id="quick-connect" class="port-btn mt-1" data-i18n="connectPortBtn" disabled>🔌 连接设备端口</button>
-            <!-- 烧录固件按钮 -->
             <button id="quick-flash" class="btn-burn mt-1 w-100" data-i18n="burnBtn" disabled>⚡ 烧录固件</button>
-            <!-- 状态行 -->
             <div class="status-row mt-1">
               <span>
                 <span class="status-dot disconnected" id="port-dot"></span>
@@ -73,13 +70,10 @@
             </div>
           </div>
 
-          <!-- 烧录进度条 -->
           <progress id="quick-progress" value="0" max="100" class="mt-1"></progress>
-          <!-- 隐藏文件选择框 -->
           <input type="file" id="quick-file" style="display: none;">
         </div>
 
-        <!-- 自定义烧录 -->
         <div class="function-card" id="custom-card">
           <div class="function-title" data-i18n="customConfigTitle">自定义烧录配置</div>
           <div>
@@ -111,7 +105,6 @@
           <progress id="custom-progress" value="0" max="100" class="mt-1"></progress>
         </div>
 
-        <!-- 擦除Flash -->
         <div class="function-card" id="erase-card">
           <div class="function-title" data-i18n="eraseConfigTitle">擦除Flash配置</div>
           <select id="erase-baudrate" style="display:none;">
@@ -128,7 +121,6 @@
         </div>
       </div>
 
-      <!-- 日志区 -->
       <div class="right-panel">
         <div class="card log-card">
           <div class="function-title" data-i18n="logTitle">操作日志</div>
@@ -138,7 +130,6 @@
     </div>
   </div>
 
-  <!-- 引入核心库和自定义脚本 -->
   <script src="esptool.min.js"></script>
   <script type="module" src="i18n.js"></script>
   <script type="module" src="firmware-library.js"></script>
