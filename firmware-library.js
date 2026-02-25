@@ -53,6 +53,16 @@ export const deviceList = [
         ]
     },
     {
+        label: "T-Watch-S3",
+        value: "T-Watch-S3",
+        chip: "ESP32_S3",
+        img: "images/t-watch-s3.svg",
+        defaultAddr: "0x000000",
+        firmwareVersions: [
+            { name: "Default_Firmware", path: "firmware/T-Beam Supreme/ESP32-C3.bin" }
+        ]
+    },
+    {
         label: "T-Beam Supreme",
         value: "T-Beam Supreme",
         chip: "ESP32_S3",
@@ -61,5 +71,16 @@ export const deviceList = [
         firmwareVersions: [
             { name: "Default_Firmware", path: "firmware/T-Beam Supreme/ESP32-C3.bin" }
         ]
-    }
+    },
+    {
+        label: "T-Display",
+        value: "T-Display",
+        chip: "ESP32_S3",
+        img: "images/t-display.svg",
+        defaultAddr: "0x000000",
+        firmwareVersions: [
+            { name: "Default_Firmware", path: "firmware/T-Beam Supreme/ESP32-C3.bin" }
+        ]
+    }        
+    
 ];

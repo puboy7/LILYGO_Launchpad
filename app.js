@@ -7,7 +7,7 @@ import { i18n, typeNameMap, modeNameMap } from './i18n.js';
 
 ready(() => {
     // 全局变量
-    let currentLang = 'zh'; // 默认中文
+    let currentLang = 'en'; // 默认中文
     const output = document.getElementById('output');
     const langSwitch = document.getElementById('lang-switch');
     // 烧录器实例：快捷/自定义/擦除
@@ -81,7 +81,7 @@ ready(() => {
         // 切换卡片选中样式
         document.querySelectorAll('.selection-card').forEach(card => card.classList.toggle('active', card.dataset.type === type));
         document.querySelectorAll('.function-card').forEach(card => card.classList.toggle('active', card.id === `${type}-card`));
-        terminal.writeLine(`Info: ${t('activateFunction').replace('{type}', typeNameMap[type][currentLang])}`);
+        // terminal.writeLine(`Info: ${t('activateFunction').replace('{type}', typeNameMap[type][currentLang])}`);
     }
 
     // ==================== 中英文切换绑定 ====================
@@ -116,7 +116,7 @@ ready(() => {
 
             // 1. 自动填充该设备的默认烧录地址
             quickAddrInput.value = dev.defaultAddr || '0x000000';
-            terminal.writeLine(`Info: ${t('selectDeviceSuccess').replace('{device}', dev.label).replace('{addr}', dev.defaultAddr)}`);
+            // terminal.writeLine(`Info: ${t('selectDeviceSuccess').replace('{device}', dev.label).replace('{addr}', dev.defaultAddr)}`);
 
             // 2. 加载该设备的所有固件版本到下拉框
             firmwareVersionSelect.innerHTML = ''; // 清空原有选项
@@ -135,7 +135,7 @@ ready(() => {
             });
             // 日志提示加载成功
             const versionNames = dev.firmwareVersions.map(v => v.name).join(', ');
-            terminal.writeLine(`Info: ${t('loadFirmwareVersionSuccess').replace('{device}', dev.label).replace('{versions}', versionNames)}`);
+            // terminal.writeLine(`Info: ${t('loadFirmwareVersionSuccess').replace('{device}', dev.label).replace('{versions}', versionNames)}`);
 
             // 3. 重置按钮/固件/进度条状态
             qConnectBtn.disabled = true;
@@ -168,11 +168,11 @@ ready(() => {
         // 加载选中版本的固件
         try {
             selectedFirmwarePath = selectedPath;
-            terminal.writeLine(`Info: 选择固件版本【${selectedVersionName}】，固件路径：${selectedPath}`);
+            // terminal.writeLine(`Info: 选择固件版本【${selectedVersionName}】，固件路径：${selectedPath}`);
             const response = await fetch(selectedPath);
             if (!response.ok) throw new Error(`HTTP ${response.status} (文件不存在/路径错误/跨域)`);
             firmwareBlob = await response.blob(); // 保存固件Blob
-            terminal.writeLine(`Success: 固件【${selectedVersionName}】加载成功`);
+            // terminal.writeLine(`Success: 固件【${selectedVersionName}】加载成功`);
             qConnectBtn.disabled = false; // 启用连接按钮
         } catch (e) {
             // 加载失败：清空固件，禁用按钮
@@ -212,7 +212,7 @@ ready(() => {
             qConnectBtn.textContent = t('connectPortBtn');
             qConnectBtn.disabled = false;
             qFlashBtn.disabled = false; // 启用烧录按钮
-            terminal.writeLine(`Success: ${t('connectSuccess')}（${selectedDevice.chip.replace('_', '-')}）`);
+            // terminal.writeLine(`Success: ${t('connectSuccess')}（${selectedDevice.chip.replace('_', '-')}）`);
         } catch (e) {
             // 连接失败：圆点保持红色，恢复按钮，禁用烧录按钮，日志报错
             updatePortStatus('port-dot', 'port-text', false);
@@ -245,7 +245,7 @@ ready(() => {
             const loadingText = currentLang === 'zh' ? '⚡ 烧录中...' : '⚡ Flashing...';
             qFlashBtn.textContent = loadingText;
             qProgress.value = 0;
-            terminal.writeLine(`Info: ${t('burnStart').replace('{file}', `${selectedVersionName}`).replace('{addr}', quickAddr)}`);
+            // terminal.writeLine(`Info: ${t('burnStart').replace('{file}', `${selectedVersionName}`).replace('{addr}', quickAddr)}`);
 
             // 读取已加载的固件Blob数据
             const data = await readAsBinaryString(firmwareBlob);
@@ -343,7 +343,7 @@ ready(() => {
             }
             const data = await readAsBinaryString(fileInput.files[0]);
             fileArray.push({ data: data, address: parseInt(addrInput.value) });
-            terminal.writeLine(`Info: 自定义烧录 - 添加文件：${fileInput.files[0].name}（地址：${addrInput.value}）`);
+            // terminal.writeLine(`Info: 自定义烧录 - 添加文件：${fileInput.files[0].name}（地址：${addrInput.value}）`);
         }
         // 开始烧录
         try {

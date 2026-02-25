@@ -1,29 +1,29 @@
 // 双语配置：LILYGO品牌版
 export const i18n = {
     // 页面标题
-    title: { zh: "LILYGO ESP32 固件在线烧录工具", en: "LILYGO ESP32 Firmware Online Burner" },
+    title: { zh: "LILYGO 固件网页烧录工具", en: "LILYGO Firmware Web Flasher" },
     // 功能选择卡片
-    quickCardTitle: { zh: "快捷烧录", en: "Quick Burn" },
-    quickCardDesc: { zh: "选设备 → 选版本 → 连端口 → 烧固件", en: "Select Dev → Ver → Connect → Burn" },
-    customCardTitle: { zh: "自定义烧录", en: "Custom Burn" },
+    quickCardTitle: { zh: "快捷烧录", en: "Quick Flash" },
+    quickCardDesc: { zh: "选设备 → 选版本 → 连端口 → 烧固件", en: "Select Dev → Ver → Connect → Flash" },
+    customCardTitle: { zh: "自定义烧录", en: "Custom Flash" },
     customCardDesc: { zh: "自由选固件 → 自定义地址", en: "Custom Firmware + Address" },
     eraseCardTitle: { zh: "擦除Flash", en: "Erase Flash" },
     eraseCardDesc: { zh: "仅擦除设备Flash → 无需固件", en: "Erase Only, No Firmware" },
     // 功能区标题
-    quickConfigTitle: { zh: "快捷烧录配置", en: "Quick Burn Config" },
-    customConfigTitle: { zh: "自定义烧录配置", en: "Custom Burn Config" },
+    quickConfigTitle: { zh: "快捷烧录配置", en: "Quick Flash Config" },
+    customConfigTitle: { zh: "自定义烧录配置", en: "Custom Flash Config" },
     eraseConfigTitle: { zh: "擦除Flash配置", en: "Erase Flash Config" },
     // 标签文字
     selectDeviceLabel: { zh: "点击设备图片选择", en: "Click Device to Select" },
     firmwareVersionLabel: { zh: "选择固件版本", en: "Select Firmware Version" },
-    firmwareAddrLabel: { zh: "固件烧录地址", en: "Firmware Burn Address" },
+    firmwareAddrLabel: { zh: "固件烧录地址", en: "Firmware Flash Address" },
     firmwareListLabel: { zh: "固件文件列表（自定义地址）", en: "Firmware List (Custom Address)" },
     logTitle: { zh: "操作日志", en: "Operation Log" },
     // 按钮文字
     connectPortBtn: { zh: "🔌 连接设备端口", en: "🔌 Connect Device Port" },
     connectSerialBtn: { zh: "🔌 连接串口", en: "🔌 Connect Serial Port" },
     addFileBtn: { zh: "+ 添加固件文件", en: "+ Add Firmware File" },
-    burnBtn: { zh: "⚡ 烧录固件", en: "⚡ Burn Firmware" },
+    burnBtn: { zh: "⚡ 烧录固件", en: "⚡ Flash Firmware" },
     eraseBtn: { zh: "🗑️ 执行擦除Flash", en: "🗑️ Erase Flash" },
     switchLangBtn: { zh: "English", en: "中文" },
     // 状态文字
@@ -33,13 +33,13 @@ export const i18n = {
     // 日志提示
     activateFunction: { zh: "已激活【{type}】功能", en: "Activated [{type}] Function" },
     loadFirmwareVersionSuccess: { zh: "加载{device}的固件版本：{versions}", en: "Load {device} firmware versions: {versions}" },
-    selectDeviceSuccess: { zh: "选中LILYGO {device}，默认烧录地址：{addr}", en: "Selected LILYGO {device}, Default Burn Address: {addr}" },
+    selectDeviceSuccess: { zh: "选中LILYGO {device}，默认烧录地址：{addr}", en: "Selected LILYGO {device}, Default Flash Address: {addr}" },
     firmwareLoadFail: { zh: "加载固件{firmware}失败：{msg}", en: "Load Firmware {firmware} Failed: {msg}" },
     connectSuccess: { zh: "设备端口连接成功", en: "Device Port Connected Successfully" },
     connectFail: { zh: "设备端口连接失败 - {msg}", en: "Device Port Connect Failed - {msg}" },
-    burnStart: { zh: "开始烧录固件：{file}（地址：{addr}），自动擦除+压缩烧录", en: "Start Burning Firmware: {file} (Address: {addr}), Auto Erase + Compress" },
-    burnSuccess: { zh: "固件烧录完成！设备已自动重启", en: "Firmware Burn Completed! Device Restarted Automatically" },
-    burnFail: { zh: "固件烧录失败 - {msg}", en: "Firmware Burn Failed - {msg}" },
+    burnStart: { zh: "开始烧录固件：{file}（地址：{addr}），自动擦除+压缩烧录", en: "Start Flashing Firmware: {file} (Address: {addr}), Auto Erase + Compress" },
+    burnSuccess: { zh: "固件烧录完成！设备已自动重启", en: "Firmware Flash Completed! Device Restarted Automatically" },
+    burnFail: { zh: "固件烧录失败 - {msg}", en: "Firmware Flash Failed - {msg}" },
     eraseStart: { zh: "开始擦除Flash...（请勿断开设备）", en: "Start Erasing Flash... (Do Not Disconnect)" },
     eraseSuccess: { zh: "Flash擦除完成！", en: "Flash Erase Completed!" },
     eraseFail: { zh: "Flash擦除失败 - {msg}", en: "Flash Erase Failed - {msg}" },
@@ -49,15 +49,15 @@ export const i18n = {
     addressFormatError: { zh: "地址格式错误：{addr}（需以0x开头的十六进制数）", en: "Invalid Address Format: {addr} (Must be Hex Starting with 0x)" },
     noFileError: { zh: "请选择固件文件", en: "Please Select Firmware File" },
     allFileError: { zh: "请选择所有固件文件", en: "Please Select All Firmware Files" },
-    initLog1: { zh: "欢迎使用LILYGO ESP32固件在线烧录工具", en: "Welcome to LILYGO ESP32 Firmware Online Burner" },
-    initLog2: { zh: "快捷烧录流程：选设备 → 选版本 → 连接端口 → 点击烧录", en: "Quick Burn Process: Select Dev → Ver → Connect Port → Click Burn" },
-    initLog3: { zh: "默认配置：波特率115200 | 自动擦除Flash | 压缩烧录", en: "Default Config: Baudrate 115200 | Auto Erase Flash | Compressed Burn" }
+    initLog1: { zh: "欢迎使用LILYGO 固件网页烧录工具", en: "Welcome to LILYGO Firmware Web Flasher" },
+    initLog2: { zh: "快捷烧录流程：选设备 → 选版本 → 连接端口 → 点击烧录", en: "Quick Flash Process: Select Dev → Ver → Connect Port → Click Flash" },
+    initLog3: { zh: "默认配置：波特率115200 | 自动擦除Flash | 压缩烧录", en: "Default Config: Baudrate 115200 | Auto Erase Flash | Compressed Flash" }
 };
 
 // 功能类型名称映射（用于日志）
 export const typeNameMap = {
-    quick: { zh: "快捷烧录", en: "Quick Burn" },
-    custom: { zh: "自定义烧录", en: "Custom Burn" },
+    quick: { zh: "快捷烧录", en: "Quick Flash" },
+    custom: { zh: "自定义烧录", en: "Custom Flash" },
     erase: { zh: "擦除Flash", en: "Erase Flash" }
 };
 
