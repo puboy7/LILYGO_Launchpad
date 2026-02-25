@@ -222,21 +222,19 @@ ready(() => {
             terminal.writeLine(`Error: ${t('connectFail').replace('{msg}', e.message)}`);
         }
     });
-
     // ==================== 快捷烧录：烧录固件（必须先连接端口，单独逻辑） ====================
     qFlashBtn.addEventListener('click', async () => {
-        // 前置全校验：选设备+选版本+固件加载成功+已连接端口+地址格式正确
+        // 前置全校验：选设备+选版本+固件加载成功+已连接端口
         if (!selectedDevice) return terminal.writeLine(`Error: ${t('noDeviceError')}`);
         if (!selectedFirmwarePath) return terminal.writeLine(`Error: ${t('selectFirmwareVersionFirst')}`);
         if (!firmwareBlob) return terminal.writeLine(`Error: ${t('firmwareLoadFail').replace('{firmware}', selectedFirmwarePath).replace('{msg}', '固件未加载/加载失败，请重新选择版本')}`);
         if (!quickLoader) return terminal.writeLine(`Error: ${t('noConnectionError')}`);
 
-        // 地址格式校验
-        const quickAddr = quickAddrInput.value.trim();
-        if (!/^0x[0-9A-Fa-f]+$/.test(quickAddr)) {
-            return terminal.writeLine(`Error: ${t('addressFormatError').replace('{addr}', quickAddr)}`);
-        }
-        const addrNum = parseInt(quickAddr); // 转成烧录所需的数字格式
+        // 固定烧录地址为 0x000000，无需读取输入框
+        const quickAddr = '0x000000';
+        const addrNum = parseInt(quickAddr);
+        terminal.writeLine(`Info: 烧录地址已固定为 ${quickAddr}`);
+
         const selectedVersionName = firmwareVersionSelect.options[firmwareVersionSelect.selectedIndex].text;
 
         try {
@@ -245,7 +243,7 @@ ready(() => {
             const loadingText = currentLang === 'zh' ? '⚡ 烧录中...' : '⚡ Flashing...';
             qFlashBtn.textContent = loadingText;
             qProgress.value = 0;
-            // terminal.writeLine(`Info: ${t('burnStart').replace('{file}', `${selectedVersionName}`).replace('{addr}', quickAddr)}`);
+            terminal.writeLine(`Info: ${t('burnStart').replace('{file}', `${selectedVersionName}`).replace('{addr}', quickAddr)}`);
 
             // 读取已加载的固件Blob数据
             const data = await readAsBinaryString(firmwareBlob);
@@ -259,7 +257,7 @@ ready(() => {
                 compress: true, // 压缩烧录（加快速度）
                 reportProgress: (_, written, total) => {
                     qProgress.value = (written / total) * 100;
-                    // terminal.writeLine(`Progress: 烧录进度 ${(written / total * 100).toFixed(2)}%`);
+                    terminal.writeLine(`Progress: 烧录进度 ${(written / total * 100).toFixed(2)}%`);
                 },
                 calculateMD5Hash: image => CryptoJS.MD5(CryptoJS.enc.Latin1.parse(image)).toString()
             });
