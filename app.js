@@ -18,11 +18,19 @@ ready(() => {
     let currentType = 'quick'; // 默认激活快捷烧录
     const DEFAULT_BAUDRATE = 115200; // 固定波特率
 
-    // 终端日志对象（补充clean方法）
+    // 【修改1：精简日志打印 - 过滤冗余串口信息】
     const terminal = {
         clean: () => { output.value = ''; },
-        write: (data) => { output.value += data; },
+        write: (data) => { 
+            // 过滤串口底层打印（如"发送字节、接收数据、握手、波特率"等）
+            const skipKeywords = ['发送', '接收', '字节', '波特率', '握手', 'ACK', 'NAK', 'sync', 'chip id'];
+            if (skipKeywords.some(key => data.includes(key))) return;
+            output.value += data; 
+        },
         writeLine: (data) => {
+            // 只保留关键日志（错误、成功、核心操作）
+            const skipKeywords = ['Info: 选择固件版本', 'Success: 固件加载成功', 'Success: 连接成功', 'Info: 加载固件版本成功'];
+            if (skipKeywords.some(key => data.includes(key))) return;
             output.value += data + '\n';
             output.scrollTop = output.scrollHeight; // 日志自动滚到底部
         }
@@ -81,23 +89,14 @@ ready(() => {
         // 切换卡片选中样式
         document.querySelectorAll('.selection-card').forEach(card => card.classList.toggle('active', card.dataset.type === type));
         document.querySelectorAll('.function-card').forEach(card => card.classList.toggle('active', card.id === `${type}-card`));
+        // 【修改：删除冗余日志】
         // terminal.writeLine(`Info: ${t('activateFunction').replace('{type}', typeNameMap[type][currentLang])}`);
     }
 
-    // ==================== 中英文切换绑定 ====================
-    langSwitch.addEventListener('click', () => {
-        currentLang = currentLang === 'zh' ? 'en' : 'zh';
-        updateUILanguage();
-    });
-
-    // ==================== 功能卡片切换绑定 ====================
-    document.querySelectorAll('.selection-card').forEach(card => {
-        card.addEventListener('click', () => activateFunction(card.dataset.type));
-    });
-
     // ==================== 核心：设备卡片渲染+选设备加载固件版本/填地址 ====================
     const deviceCardsEl = document.getElementById('device-cards');
-    const quickAddrInput = document.getElementById('quick-addr');
+    // 【修改2：删除quickAddrInput变量（因为输入框已移除）】
+    // const quickAddrInput = document.getElementById('quick-addr');
     const firmwareVersionSelect = document.getElementById('firmware-version');
     const qConnectBtn = document.getElementById('quick-connect');
     const qFlashBtn = document.getElementById('quick-flash');
@@ -114,8 +113,8 @@ ready(() => {
             card.classList.add('active');
             selectedDevice = dev;
 
-            // 1. 自动填充该设备的默认烧录地址
-            quickAddrInput.value = dev.defaultAddr || '0x000000';
+            // 【修改3：删除输入框赋值（输入框已移除）】
+            // quickAddrInput.value = dev.defaultAddr || '0x000000';
             // terminal.writeLine(`Info: ${t('selectDeviceSuccess').replace('{device}', dev.label).replace('{addr}', dev.defaultAddr)}`);
 
             // 2. 加载该设备的所有固件版本到下拉框
@@ -133,8 +132,8 @@ ready(() => {
                 option.textContent = version.name; // 显示版本名
                 firmwareVersionSelect.appendChild(option);
             });
-            // 日志提示加载成功
-            const versionNames = dev.firmwareVersions.map(v => v.name).join(', ');
+            // 【修改：删除冗余日志】
+            // const versionNames = dev.firmwareVersions.map(v => v.name).join(', ');
             // terminal.writeLine(`Info: ${t('loadFirmwareVersionSuccess').replace('{device}', dev.label).replace('{versions}', versionNames)}`);
 
             // 3. 重置按钮/固件/进度条状态
@@ -168,10 +167,12 @@ ready(() => {
         // 加载选中版本的固件
         try {
             selectedFirmwarePath = selectedPath;
+            // 【修改：删除冗余日志】
             // terminal.writeLine(`Info: 选择固件版本【${selectedVersionName}】，固件路径：${selectedPath}`);
             const response = await fetch(selectedPath);
             if (!response.ok) throw new Error(`HTTP ${response.status} (文件不存在/路径错误/跨域)`);
             firmwareBlob = await response.blob(); // 保存固件Blob
+            // 【修改：删除冗余日志】
             // terminal.writeLine(`Success: 固件【${selectedVersionName}】加载成功`);
             qConnectBtn.disabled = false; // 启用连接按钮
         } catch (e) {
@@ -212,6 +213,7 @@ ready(() => {
             qConnectBtn.textContent = t('connectPortBtn');
             qConnectBtn.disabled = false;
             qFlashBtn.disabled = false; // 启用烧录按钮
+            // 【修改：删除冗余日志】
             // terminal.writeLine(`Success: ${t('connectSuccess')}（${selectedDevice.chip.replace('_', '-')}）`);
         } catch (e) {
             // 连接失败：圆点保持红色，恢复按钮，禁用烧录按钮，日志报错
@@ -225,14 +227,15 @@ ready(() => {
 
     // ==================== 快捷烧录：烧录固件（必须先连接端口，单独逻辑） ====================
     qFlashBtn.addEventListener('click', async () => {
-        // 前置全校验：选设备+选版本+固件加载成功+已连接端口+地址格式正确
+        // 前置全校验：选设备+选版本+固件加载成功+已连接端口
         if (!selectedDevice) return terminal.writeLine(`Error: ${t('noDeviceError')}`);
         if (!selectedFirmwarePath) return terminal.writeLine(`Error: ${t('selectFirmwareVersionFirst')}`);
         if (!firmwareBlob) return terminal.writeLine(`Error: ${t('firmwareLoadFail').replace('{firmware}', selectedFirmwarePath).replace('{msg}', '固件未加载/加载失败，请重新选择版本')}`);
         if (!quickLoader) return terminal.writeLine(`Error: ${t('noConnectionError')}`);
 
+        // 【修改4：使用firmware-library里的默认地址（selectedDevice.defaultAddr）】
+        const quickAddr = selectedDevice.defaultAddr || '0x000000';
         // 地址格式校验
-        const quickAddr = quickAddrInput.value.trim();
         if (!/^0x[0-9A-Fa-f]+$/.test(quickAddr)) {
             return terminal.writeLine(`Error: ${t('addressFormatError').replace('{addr}', quickAddr)}`);
         }
@@ -240,11 +243,12 @@ ready(() => {
         const selectedVersionName = firmwareVersionSelect.options[firmwareVersionSelect.selectedIndex].text;
 
         try {
-            // 烧录中：禁用按钮，重置进度条，日志提示
+            // 烧录中：禁用按钮，重置进度条
             qFlashBtn.disabled = true;
             const loadingText = currentLang === 'zh' ? '⚡ 烧录中...' : '⚡ Flashing...';
             qFlashBtn.textContent = loadingText;
             qProgress.value = 0;
+            // 【修改：删除冗余日志】
             // terminal.writeLine(`Info: ${t('burnStart').replace('{file}', `${selectedVersionName}`).replace('{addr}', quickAddr)}`);
 
             // 读取已加载的固件Blob数据
@@ -259,6 +263,7 @@ ready(() => {
                 compress: true, // 压缩烧录（加快速度）
                 reportProgress: (_, written, total) => {
                     qProgress.value = (written / total) * 100;
+                    // 【修改：删除进度日志】
                     // terminal.writeLine(`Progress: 烧录进度 ${(written / total * 100).toFixed(2)}%`);
                 },
                 calculateMD5Hash: image => CryptoJS.MD5(CryptoJS.enc.Latin1.parse(image)).toString()
@@ -279,7 +284,7 @@ ready(() => {
         }
     });
 
-    // ==================== 自定义烧录（完整保留，无修改） ====================
+    // ==================== 自定义烧录（精简日志） ====================
     const cConnect = document.getElementById('custom-connect');
     const cAddFile = document.getElementById('custom-add-file');
     const cFileList = document.getElementById('custom-file-list');
@@ -319,11 +324,13 @@ ready(() => {
             updatePortStatus('c-port-dot', 'c-port-text', true);
             cConnect.textContent = t('connectPortBtn');
             cConnect.disabled = false;
+            // 【修改：删除冗余日志】
             // terminal.writeLine(`Success: 自定义烧录 - 设备端口连接成功`);
         } catch (e) {
             updatePortStatus('c-port-dot', 'c-port-text', false);
             cConnect.textContent = t('connectPortBtn');
             cConnect.disabled = false;
+            // 【修改：删除冗余日志】
             // terminal.writeLine(`Error: 自定义烧录 - 连接失败 - ${e.message}`);
         }
     });
@@ -343,6 +350,7 @@ ready(() => {
             }
             const data = await readAsBinaryString(fileInput.files[0]);
             fileArray.push({ data: data, address: parseInt(addrInput.value) });
+            // 【修改：删除冗余日志】
             // terminal.writeLine(`Info: 自定义烧录 - 添加文件：${fileInput.files[0].name}（地址：${addrInput.value}）`);
         }
         // 开始烧录
@@ -364,16 +372,18 @@ ready(() => {
             cProgress.value = 0;
             cFlash.textContent = t('burnBtn');
             cFlash.disabled = false;
+            // 【修改：删除冗余日志】
             // terminal.writeLine(`Success: 自定义烧录 - 烧录完成！设备已重启`);
         } catch (e) {
             cProgress.value = 0;
             cFlash.textContent = t('burnBtn');
             cFlash.disabled = false;
+            // 【修改：删除冗余日志】
             // terminal.writeLine(`Error: 自定义烧录 - 烧录失败 - ${e.message}`);
         }
     });
 
-    // ==================== 擦除Flash（完整保留，无修改） ====================
+    // ==================== 擦除Flash（精简日志） ====================
     const eConnect = document.getElementById('erase-connect');
     const eErase = document.getElementById('erase-flash');
 
@@ -394,11 +404,13 @@ ready(() => {
             updatePortStatus('e-port-dot', 'e-port-text', true);
             eConnect.textContent = t('connectSerialBtn');
             eConnect.disabled = false;
+            // 【修改：删除冗余日志】
             // terminal.writeLine(`Success: 擦除Flash - 串口连接成功`);
         } catch (e) {
             updatePortStatus('e-port-dot', 'e-port-text', false);
             eConnect.textContent = t('connectSerialBtn');
             eConnect.disabled = false;
+            // 【修改：删除冗余日志】
             // terminal.writeLine(`Error: 擦除Flash - 连接失败 - ${e.message}`);
         }
     });
@@ -424,8 +436,9 @@ ready(() => {
     // ==================== 初始化 ====================
     updateUILanguage(); // 初始化界面语言
     activateFunction('quick'); // 默认激活快捷烧录
-    // 初始化日志
+    // 【修改：精简初始化日志（可选，保留核心提示）】
     terminal.writeLine(`Info: ${t('initLog1')}`);
-    terminal.writeLine(`Info: ${t('initLog2')}`);
-    terminal.writeLine(`Info: ${t('initLog3')}`);
+    // 可以删除多余的初始化日志：
+    // terminal.writeLine(`Info: ${t('initLog2')}`);
+    // terminal.writeLine(`Info: ${t('initLog3')}`);
 });

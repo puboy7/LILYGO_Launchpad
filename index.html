@@ -5,7 +5,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title id="page-title">LILYGO Web Flasher</title>
-  <!-- 标签页图标：指向 images/favicon.ico -->
   <link rel="icon" href="images/favicon.ico" type="image/x-icon">
   <link rel="shortcut icon" href="images/favicon.ico?v=2" type="image/x-icon">
   <link rel="stylesheet" href="style.css">
@@ -14,10 +13,8 @@
 
 <body>
   <div class="container">
-    <!-- 头部 logo 区域：新增 logo 图片 + 标题组合 -->
     <div class="logo">
       <div class="logo-group">
-        <!-- LILYGO logo 图片：请将图片放在 images 文件夹，替换为你的 logo 文件名 -->
         <img src="images/favicon.ico" alt="LILYGO Logo" class="logo-img">
         <h1 id="logo-title">LILYGO ESP32 固件在线烧录工具</h1>
       </div>
@@ -29,17 +26,14 @@
           <div class="selection-card active" data-type="quick">
             <div class="card-icon">⚡</div>
             <div class="card-title" data-i18n="quickCardTitle">快捷烧录</div>
-            <!-- <div class="card-desc" data-i18n="quickCardDesc">选设备 → 选版本 → 连端口 → 烧固件</div> -->
           </div>
           <div class="selection-card" data-type="custom">
             <div class="card-icon">🔧</div>
             <div class="card-title" data-i18n="customCardTitle">自定义烧录</div>
-            <!-- <div class="card-desc" data-i18n="customCardDesc">自由选固件 → 自定义地址</div> -->
           </div>
           <div class="selection-card" data-type="erase">
             <div class="card-icon">🗑️</div>
             <div class="card-title" data-i18n="eraseCardTitle">擦除Flash</div>
-            <!-- <div class="card-desc" data-i18n="eraseCardDesc">仅擦除设备Flash → 无需固件</div> -->
           </div>
         </div>
 
@@ -57,8 +51,7 @@
             <select id="quick-baudrate" style="display:none;">
               <option value="115200" selected>115200</option>
             </select>
-            <label data-i18n="firmwareAddrLabel">固件烧录地址</label>
-            <input type="text" class="address-input mt-1" id="quick-addr" value="0x000000" placeholder="0x000000">
+            <!-- 【修改1：删除0x00输入框】移除原有的固件烧录地址输入框 -->
             <button id="quick-connect" class="port-btn mt-1" data-i18n="connectPortBtn" disabled>🔌 连接设备端口</button>
             <button id="quick-flash" class="btn-burn mt-1 w-100" data-i18n="burnBtn" disabled>⚡ 烧录固件</button>
             <div class="status-row mt-1">
