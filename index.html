@@ -57,7 +57,8 @@
             <select id="quick-baudrate" style="display:none;">
               <option value="115200" selected>115200</option>
             </select>
-            <!-- 移除：固件烧录地址 label + input -->
+            <label data-i18n="firmwareAddrLabel">固件烧录地址</label>
+            <input type="text" class="address-input mt-1" id="quick-addr" value="0x000000" placeholder="0x000000">
             <button id="quick-connect" class="port-btn mt-1" data-i18n="connectPortBtn" disabled>🔌 连接设备端口</button>
             <button id="quick-flash" class="btn-burn mt-1 w-100" data-i18n="burnBtn" disabled>⚡ 烧录固件</button>
             <div class="status-row mt-1">
