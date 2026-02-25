@@ -9,7 +9,7 @@ export const deviceList = [
         // 该设备的固件版本列表（name-显示名，path-实际固件路径）
         firmwareVersions: [
             { name: "UnitTest_251113", path: "firmware/T-deck/T-Deck_UnitTest_251113.bin" },
-            { name: "UnitTest_250000", path: "firmware/T-deck/T-Deck_UnitTest_251113.bin" }
+            // { name: "UnitTest_250000", path: "firmware/T-deck/T-Deck_UnitTest_251113.bin" }
         ]
     },
     {
@@ -19,7 +19,7 @@ export const deviceList = [
         img: "images/tdeck_pro.svg",
         defaultAddr: "0x000000",
         firmwareVersions: [
-            { name: "Default_Firmware", path: "firmware/T-Deck Pro/ESP32-C3.bin" }
+            { name: "Factory_Firmware", path: "firmware/T-deck-pro/T-Deck-pro.bin" },
         ]
     },
     {
@@ -29,17 +29,43 @@ export const deviceList = [
         img: "images/lilygo-tlora-pager.svg",
         defaultAddr: "0x000000",
         firmwareVersions: [
-            { name: "Default_Firmware", path: "firmware/T-LoRa Pager/ESP8266.bin" }
+            { name: "T-LoRa-pager-Factory-LR1121", path: "firmware/T-LoRa-pager/T-LoRa-pager-Factory-LR1121.bin" },
+            { name: "T-LoRa-pager-Factory-SX1262", path: "firmware/T-LoRa-pager/T-LoRa-pager-Factory-SX1262.bin" }
         ]
     },
     {
-        label: "T3-S3",
-        value: "T3-S3",
-        chip: "ESP32_S3",
+        label: "T3",
+        value: "T3",
+        chip: "ESP32_S3/ESP32",
         img: "images/tlora-t3s3-v1.svg",
         defaultAddr: "0x000000",
         firmwareVersions: [
-            { name: "Default_Firmware", path: "firmware/T3-S3/ESP32-C3.bin" }
+            { name: "LoRa32-V1_3-Recv-868M", path: "firmware/T3/LoRa32-V1_3-Recv-868M.bin" },
+            { name: "LoRa32-V1_3-Send-868M", path: "firmware/T3/LoRa32-V1_3-Send-868M.bin" },
+            { name: "LoRa32-V1_3-Recv-915M", path: "firmware/T3/LoRa32-V1_3-Recv-915M.bin" },
+            { name: "LoRa32-V1_3-Send-915M", path: "firmware/T3/LoRa32-V1_3-Send-915M.bin" },
+            { name: "LoRa32-V1_6_1-Recv-433M", path: "firmware/T3/LoRa32-V1_6_1-Recv-433M.bin" },
+            { name: "LoRa32-V1_6_1-Send-433M", path: "firmware/T3/LoRa32-V1_6_1-Send-433M.bin" },
+            { name: "LoRa32-V1_6_1-Recv-868M", path: "firmware/T3/LoRa32-V1_6_1-Recv-868M.bin" },
+            { name: "LoRa32-V1_6_1-Send-868M", path: "firmware/T3/LoRa32-V1_6_1-Send-868M.bin" },
+            { name: "LoRa32-V1_6_1-Recv-915M", path: "firmware/T3/LoRa32-V1_6_1-Recv-915M.bin" },
+            { name: "LoRa32-V1_6_1-Send-915M", path: "firmware/T3/LoRa32-V1_6_1-Send-915M.bin" },
+            
+            { name: "T3_S3-V1_2_LR1121_Factory", path: "firmware/T3/T3_S3-V1_2_LR1121_Factory.bin" },
+            { name: "T3_S3-V1_2_SX1262_Factory", path: "firmware/T3/T3_S3-V1_2_SX1262_Factory.bin" },
+            { name: "T3_S3-V1_2_SX1276_Factory", path: "firmware/T3/T3_S3-V1_2_SX1276_Factory.bin" },
+            { name: "T3_S3-V1_2_SX1278_Factory", path: "firmware/T3/T3_S3-V1_2_SX1278_Factory.bin" },
+            { name: "T3_S3-V1_2_SX1280_Factory", path: "firmware/T3/T3_S3-V1_2_SX1280_Factory.bin" },
+            { name: "T3_S3-V1_2_SX1280_PA_Factory", path: "firmware/T3/T3_S3-V1_2_SX1280_PA_Factory.bin" },
+            
+
+            { name: "T3_V3-TXCO_Recv", path: "firmware/T3/T3_V3_TXCO_Recv.bin" },
+            { name: "T3_V3-TXCO_Send", path: "firmware/T3/T3_V3_TXCO_Send.bin" },
+
+            { name: "T3_C6-Recv", path: "firmware/T3/T3-C6_Receive_868_BW125_OP22_CL140_SF8.bin" },
+            { name: "T3_V3-Send", path: "firmware/T3/T3-C6_Transmit_868_BW125_OP22_CL140_SF8.bin" }
+
+
         ]
     },
     {
