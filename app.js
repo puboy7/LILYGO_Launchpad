@@ -259,7 +259,7 @@ ready(() => {
                 compress: true, // 压缩烧录（加快速度）
                 reportProgress: (_, written, total) => {
                     qProgress.value = (written / total) * 100;
-                    terminal.writeLine(`Progress: 烧录进度 ${(written / total * 100).toFixed(2)}%`);
+                    // terminal.writeLine(`Progress: 烧录进度 ${(written / total * 100).toFixed(2)}%`);
                 },
                 calculateMD5Hash: image => CryptoJS.MD5(CryptoJS.enc.Latin1.parse(image)).toString()
             });
@@ -319,12 +319,12 @@ ready(() => {
             updatePortStatus('c-port-dot', 'c-port-text', true);
             cConnect.textContent = t('connectPortBtn');
             cConnect.disabled = false;
-            terminal.writeLine(`Success: 自定义烧录 - 设备端口连接成功`);
+            // terminal.writeLine(`Success: 自定义烧录 - 设备端口连接成功`);
         } catch (e) {
             updatePortStatus('c-port-dot', 'c-port-text', false);
             cConnect.textContent = t('connectPortBtn');
             cConnect.disabled = false;
-            terminal.writeLine(`Error: 自定义烧录 - 连接失败 - ${e.message}`);
+            // terminal.writeLine(`Error: 自定义烧录 - 连接失败 - ${e.message}`);
         }
     });
 
@@ -364,12 +364,12 @@ ready(() => {
             cProgress.value = 0;
             cFlash.textContent = t('burnBtn');
             cFlash.disabled = false;
-            terminal.writeLine(`Success: 自定义烧录 - 烧录完成！设备已重启`);
+            // terminal.writeLine(`Success: 自定义烧录 - 烧录完成！设备已重启`);
         } catch (e) {
             cProgress.value = 0;
             cFlash.textContent = t('burnBtn');
             cFlash.disabled = false;
-            terminal.writeLine(`Error: 自定义烧录 - 烧录失败 - ${e.message}`);
+            // terminal.writeLine(`Error: 自定义烧录 - 烧录失败 - ${e.message}`);
         }
     });
 
@@ -394,12 +394,12 @@ ready(() => {
             updatePortStatus('e-port-dot', 'e-port-text', true);
             eConnect.textContent = t('connectSerialBtn');
             eConnect.disabled = false;
-            terminal.writeLine(`Success: 擦除Flash - 串口连接成功`);
+            // terminal.writeLine(`Success: 擦除Flash - 串口连接成功`);
         } catch (e) {
             updatePortStatus('e-port-dot', 'e-port-text', false);
             eConnect.textContent = t('connectSerialBtn');
             eConnect.disabled = false;
-            terminal.writeLine(`Error: 擦除Flash - 连接失败 - ${e.message}`);
+            // terminal.writeLine(`Error: 擦除Flash - 连接失败 - ${e.message}`);
         }
     });
 
