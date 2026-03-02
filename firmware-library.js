@@ -8,7 +8,7 @@ export const deviceList = [
         defaultAddr: "0x000000",
         // 该设备的固件版本列表（name-显示名，path-实际固件路径）
         firmwareVersions: [
-            { name: "UnitTest_251113", path: "firmware/T-deck/T-Deck_UnitTest_251113.bin" },
+            { name: "UnitTest_251113", path: "firmware/T-deck/T-Deck_UnitTest.bin" }
             // { name: "UnitTest_250000", path: "firmware/T-deck/T-Deck_UnitTest_251113.bin" }
         ]
     },
@@ -85,7 +85,21 @@ export const deviceList = [
         img: "images/t-watch-s3.svg",
         defaultAddr: "0x000000",
         firmwareVersions: [
-            { name: "Default_Firmware", path: "firmware/T-Beam Supreme/ESP32-C3.bin" }
+            { name: "T-Watch-S3-SX1262", path: "firmware/T-Watch/T-Watch-s3-sx1262.bin" },
+            { name: "T-Watch-S3-SX1280", path: "firmware/T-Watch/T-Watch-s3-sx1280.bin" },
+            { name: "T-Watch-S3-Ultra", path: "firmware/T-Watch/T-Watch-ultra-sx1262.bin"} 
+        ]
+    },
+    {
+        label: "T-Beam",
+        value: "T-Beam",
+        chip: "ESP32_S3",
+        img: "images/tbeam.svg",
+        defaultAddr: "0x000000",
+        firmwareVersions: [
+            { name: "SX1262_Factory", path: "firmware/T-Beam/T_BEAM_SX1262_Factory.bin" },
+            { name: "SX1276_Factory" , path: "firmware/T-Beam/T_BEAM_SX1276_Factory.bin" },    
+            { name: "SX1278_Factory", path: "firmware/T-Beam/T_BEAM_SX1278_Factory.bin" },
         ]
     },
     {
@@ -95,7 +109,10 @@ export const deviceList = [
         img: "images/tbeam-s3-core.svg",
         defaultAddr: "0x000000",
         firmwareVersions: [
-            { name: "Default_Firmware", path: "firmware/T-Beam Supreme/ESP32-C3.bin" }
+            { name: "LR1121_920Mhz_Factory", path: "firmware/T-Beam-Supme/T_BEAM_S3_SUPREME_LR1121_Factory_920Mhz.bin" },
+            { name: "LR1121_AllFreband_Factory", path: "firmware/T-Beam-Supme/T_BEAM_S3_SUPREME_LR1121_Factory_AllFreqband.bin" },
+            { name: "SX1262_920Mhz_Factory", path: "firmware/T-Beam-Supme/T_BEAM_S3_SUPREME_SX1262_Factory_920Mhz.bin" },
+            { name: "SX1262_AllFreband_Factory", path: "firmware/T-Beam-Supme/T_BEAM_S3_SUPREME_SX1262_Factory_AllFreqband.bin" }
         ]
     },
     {
