@@ -116,14 +116,25 @@ export const deviceList = [
         ]
     },
     {
-        label: "T-Display",
-        value: "T-Display",
+        label: "T-Display-S3",
+        value: "T-Display-S3",
         chip: "ESP32_S3",
         img: "images/t-display.svg",
         defaultAddr: "0x000000",
         firmwareVersions: [
-            { name: "Default_Firmware", path: "firmware/T-Beam Supreme/ESP32-C3.bin" }
+            { name: "T-Display-S3-NotTouch", path: "firmware/T-Display/T-Display-S3-NotTouch.bin" },
+            { name: "T-Display-S3-Touch", path: "firmware/T-Display/T-Display-S3-Touch.bin" }
         ]
-    }        
+    },
+    {
+        label: "T-Display-S3-Pro",
+        value: "T-Display-S3-Pro",
+        chip: "ESP32_S3",
+        img: "images/T-Display-S3-Pro.svg",
+        defaultAddr: "0x000000",
+        firmwareVersions: [
+            { name: "T-Display-S3-Pro", path: "firmware/T-Display-S3-Pro/T-Display-S3-Pro-Factory.bin" }
+        ]
+    }          
     
 ];
